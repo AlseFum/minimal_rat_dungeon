@@ -1113,6 +1113,13 @@ public class GameScene extends PixelScene {
 			scene.addBlobSprite( gas );
 		}
 	}
+
+	/** Adds a visual to the level visual layer (above terrain, below characters). */
+	public static void addLevelVisual( Visual visual ) {
+		if (scene != null) {
+			scene.levelVisuals.add( visual );
+		}
+	}
 	
 	public static void add( Heap heap ) {
 		if (scene != null) {

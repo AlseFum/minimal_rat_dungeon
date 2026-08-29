@@ -70,6 +70,30 @@ public abstract class DungeonRegion {
 	/** Adjusts generated transitions for this region without changing base level classes. */
 	public void configureLevel(Level level) { }
 
+	/**
+	 * Picks up to {@code count} random open cells (passable, no mob, trap or
+	 * entity), each at least {@code minDist} tiles away from the others.
+	 * Returns fewer when the level does not have enough open space.
+	 */
+	protected ArrayList<Integer> pickOpenCells(Level level, int count, int minDist) {
+		ArrayList<Integer> candidates = new ArrayList<>();
+		for (int i = 0; i < level.length(); i++) {
+			if (level.passable[i] && !level.solid[i]
+					&& level.findMob(i) == null
+					&& level.traps.get(i) == null
+					&& level.entityAt(i) == null) {
+				candidates.add(i);
+			}
+		}
+		ArrayList<Integer> picked = new ArrayList<>();
+		while (picked.size() < count && !candidates.isEmpty()) {
+			int cell = candidates.remove(Random.Int(candidates.size()));
+			picked.add(cell);
+			candidates.removeIf(c -> level.distance(c, cell) < minDist);
+		}
+		return picked;
+	}
+
 	public boolean isBossLevel() { return false; }
 
 	public boolean shopOnLevel() { return false; }
@@ -123,6 +147,10 @@ public abstract class DungeonRegion {
 	private static void registerBuiltins() {
 		if (builtinsRegistered) return;
 		builtinsRegistered = true;
+		register(new ActIRegion());
+		register(new ChapVRegion());
+		register(new ChapVIRegion());
+		register(new ChapVIIRegion());
 		register(new DungeonRegion() {
 			public String id() { return "sewers"; }
 			public float weight() { return Dungeon.mode == Dungeon.Mode.DEMO && Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 1 : 0; }

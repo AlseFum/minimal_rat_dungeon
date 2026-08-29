@@ -38,6 +38,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.cleric.Pow
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.rogue.DeathMark;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.AuraOfProtection;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.spells.LifeLinkSpell;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mapDevice.MapDevice;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Rat;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ShadowParticle;
@@ -99,6 +100,14 @@ public class Proc {
 	public static int damage(DamageInfo info) {
 		Char defender = info.defender;
 		if (defender == null || !defender.isAlive() || info.total() < 0) return 0;
+
+		//map devices never take HP damage from any source (melee, AoE, gas, ...);
+		//they only receive the attack event and persist
+		if (defender instanceof MapDevice) {
+			((MapDevice) defender).receiveDamage(
+					info.legacySrc != null ? info.legacySrc : (Object) (info.offender != null ? info.offender : info));
+			return 0;
+		}
 
 		Object src = info.legacySrc;
 

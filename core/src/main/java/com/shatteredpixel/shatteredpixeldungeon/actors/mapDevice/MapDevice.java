@@ -45,6 +45,12 @@ public abstract class MapDevice extends Mob {
 	}
 
 	@Override
+	public boolean reset() {
+		//devices persist: level resets must not remove them
+		return true;
+	}
+
+	@Override
 	public int attackSkill( Char target ) {
 		return 0;
 	}

@@ -350,6 +350,19 @@ public abstract class Char extends Actor {
 	final public boolean attack( Char enemy ){
 		return attack(enemy, 1f, 0f, 1f);
 	}
+
+	/**
+	 * Attacks up to {@code hitCount} times in sequence, stopping early if
+	 * the enemy dies. Each segment rolls hit/damage independently.
+	 */
+	public boolean attack( Char enemy, float dmgMulti, float dmgBonus, float accMulti, int hitCount ) {
+		boolean result = false;
+		for (int i = 0; i < hitCount; i++) {
+			if (attack(enemy, dmgMulti, dmgBonus, accMulti)) result = true;
+			if (enemy == null || !enemy.isAlive()) break;
+		}
+		return result;
+	}
 	
 	public boolean attack( Char enemy, float dmgMulti, float dmgBonus, float accMulti ) {
 

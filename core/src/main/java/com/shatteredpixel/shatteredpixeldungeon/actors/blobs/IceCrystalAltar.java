@@ -130,8 +130,12 @@ public class IceCrystalAltar extends Blob implements Hero.Doom {
 				if (s == null) {
 					s = new MapDeviceSprite();
 					s.place(cell);
-					GameScene.addLevelVisual(s);
 					sprites.put(cell, s);
+				}
+				//the scene may not exist yet when onAdd runs (Actor.init happens
+				//before GameScene.create), so re-attach until it sticks
+				if (s.parent == null) {
+					GameScene.addLevelVisual(s);
 				}
 				s.visible = Dungeon.level.heroFOV[cell];
 			} else if (s != null) {

@@ -253,6 +253,11 @@ abstract public class KindOfWeapon extends EquipableItem {
 	public float accuracyFactor( Char owner, Char target ) {
 		return 1f;
 	}
+
+	/** Number of damage segments a regular attack with this weapon deals. */
+	public int hitCount() {
+		return 1;
+	}
 	
 	public float delayFactor( Char owner ) {
 		return 1f;

@@ -123,6 +123,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLivingEarth;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Crossbow;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.BerserkWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Flail;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
@@ -223,6 +224,11 @@ public class Hero extends Char {
 
 	//reference to the enemy the hero is currently in the process of attacking
 	private Char attackTarget;
+
+	/** The hero's current attack target, or null when not attacking. */
+	public Char enemy() {
+		return attackTarget;
+	}
 	
 	public boolean resting = false;
 	
@@ -702,6 +708,10 @@ public class Hero extends Char {
 
 	@Override
 	public int drRoll() {
+		if (buff(BerserkWeapon.BerserkBuff.class) != null) {
+			return 0;
+		}
+
 		int dr = super.drRoll();
 
 		if (belongings.armor() != null) {
@@ -2281,8 +2291,10 @@ public class Hero extends Char {
 		AttackIndicator.target(attackTarget);
 		boolean wasEnemy = attackTarget.alignment == Alignment.ENEMY;
 
-		boolean hit = attack(attackTarget);
-		
+		KindOfWeapon wep = belongings.attackingWeapon();
+		int hitCount = wep != null ? Math.max(1, wep.hitCount()) : 1;
+		boolean hit = attack(attackTarget, 1f, 0f, 1f, hitCount);
+
 		Invisibility.dispel();
 		spend( attackDelay() );
 

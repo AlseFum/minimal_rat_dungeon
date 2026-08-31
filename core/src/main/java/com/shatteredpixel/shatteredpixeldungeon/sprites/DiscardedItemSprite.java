@@ -28,11 +28,18 @@ public class DiscardedItemSprite extends ItemSprite {
 	
 	@Override
 	public void drop() {
-		scale.set( 1 );
+		//custom textures keep their scale-down, others reset to 1
+		float sx = scale.x;
+		float sy = scale.y;
 		am = 1;
 		if (emitter != null) emitter.killAndErase();
 
-		origin.set( width/2, height - DungeonTilemap.SIZE/2);
+		if (sx != 1f || sy != 1f) {
+			//custom texture: rotate around the scaled-down content center
+			origin.set( width/2 * sx, height/2 * sy );
+		} else {
+			origin.set( width/2, height - DungeonTilemap.SIZE/2);
+		}
 		angularSpeed = 720;
 	}
 	

@@ -66,6 +66,16 @@ public final class SpriteRegistry {
 				region.left + region.width, region.top + region.height);
 	}
 
+	/** Returns the pixel width of a registered region. */
+	public static int width(String id) {
+		return region(id).width;
+	}
+
+	/** Returns the pixel height of a registered region. */
+	public static int height(String id) {
+		return region(id).height;
+	}
+
 	/** Creates an image already configured to display the registered region. */
 	public static Image image(String id) {
 		Image image = new Image(texture(id));

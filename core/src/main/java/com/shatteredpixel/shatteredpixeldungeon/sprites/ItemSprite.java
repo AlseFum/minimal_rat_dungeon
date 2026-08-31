@@ -143,10 +143,10 @@ public class ItemSprite extends MovieClip {
 			emitter = null;
 		}
 	}
-	
+
 	public PointF worldToCamera( int cell ) {
 		final int csize = DungeonTilemap.SIZE;
-		
+
 		return new PointF(
 				PixelScene.align(Camera.main, ((cell % Dungeon.level.width()) + 0.5f) * csize - width() * 0.5f),
 				PixelScene.align(Camera.main, ((cell / Dungeon.level.width()) + 1.0f) * csize - height() - csize * perspectiveRaise)
@@ -199,7 +199,24 @@ public class ItemSprite extends MovieClip {
 	}
 
 	public ItemSprite view( Item item ){
-		view(item.image(), item.glowing());
+		if (item.spriteRegion() != null) {
+			String id = item.spriteRegion();
+			SpriteRegistry.apply(this, id);
+			//custom textures may be larger than the 16x16 item slot: squeeze
+			//them into slot size by resetting the geometry size and regenerating
+			//the vertices (the UV stays the full texture). width()/height() then
+			//report 16, so layout, placement and animations all work unchanged.
+			width = ItemSpriteSheet.SIZE;
+			height = ItemSpriteSheet.SIZE;
+			updateFrame();
+			updateVertices();
+			origin.set(0, 0);
+			scale.set(1f, 1f);
+		} else {
+			view(item.image(), item.glowing());
+			origin.set(0, 0);
+			scale.set(1f, 1f);
+		}
 		Emitter emitter = item.emitter();
 		if (emitter != null && parent != null) {
 			emitter.pos( this );

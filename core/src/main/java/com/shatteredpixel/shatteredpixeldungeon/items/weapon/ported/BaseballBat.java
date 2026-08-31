@@ -13,6 +13,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported;
 
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
+
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -25,6 +27,15 @@ import java.util.ArrayList;
 
 /** A baseball bat: throws a baseball from the inventory with bat-sourced bonuses. */
 public class BaseballBat extends MeleeWeapon {
+
+	static {
+		SpriteRegistry.r("ported.baseball_bat", "sprites/ported/cuora_baseballbat.png", 0, 0, 32, 32);
+	}
+
+	@Override
+	public String spriteRegion() {
+		return "ported.baseball_bat";
+}
 
 	public static final String AC_THROW_BASEBALL = "THROW_BASEBALL";
 

@@ -13,6 +13,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported;
 
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
+
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
@@ -20,6 +22,15 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
 /** A baseball. When thrown by a baseball bat it deals 3x damage with 2.5x accuracy. */
 public class Baseball extends MissileWeapon {
+
+	static {
+		SpriteRegistry.r("ported.baseball", "sprites/ported/cuora_baseball.png", 0, 0, 32, 32);
+	}
+
+	@Override
+	public String spriteRegion() {
+		return "ported.baseball";
+}
 
 	private boolean batSourced = false;
 

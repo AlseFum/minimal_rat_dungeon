@@ -13,11 +13,22 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported;
 
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
+
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.base.CleaveWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 
 public class MelanthaSword extends CleaveWeapon {
+
+	static {
+		SpriteRegistry.r("ported.melantha_sword", "sprites/ported/melantha_sword.png", 0, 0, 32, 32);
+	}
+
+	@Override
+	public String spriteRegion() {
+		return "ported.melantha_sword";
+}
 
 	{
 		image = ItemSpriteSheet.SWORD; //TODO: dedicated icon

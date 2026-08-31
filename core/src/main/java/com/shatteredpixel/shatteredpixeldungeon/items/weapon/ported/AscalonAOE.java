@@ -13,6 +13,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported;
 
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
+
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -35,6 +37,15 @@ import com.watabou.utils.PathFinder;
 
 /** Ascalon's signature weapon — sweeping AOE attacks with lingering wounds. */
 public class AscalonAOE extends MeleeWeapon {
+
+	static {
+		SpriteRegistry.r("ported.ascalon", "sprites/ported/ascalon_weapon.png", 0, 0, 64, 64);
+	}
+
+	@Override
+	public String spriteRegion() {
+		return "ported.ascalon";
+}
 
 	{
 		//ZootDungeon used TextureRegistry.texture("sheet.cola.ascalon_weapon", ...) — not ported, placeholder sprite

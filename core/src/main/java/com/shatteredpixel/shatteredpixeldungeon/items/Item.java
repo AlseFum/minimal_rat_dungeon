@@ -512,6 +512,14 @@ public class Item implements Bundlable {
 
 	public Emitter emitter() { return null; }
 	
+	/**
+	 * Optional {@link com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry}
+	 * region id which overrides the sheet image for this item's sprite.
+	 */
+	public String spriteRegion() {
+		return null;
+	}
+
 	public String info() {
 
 		if (Dungeon.hero != null) {

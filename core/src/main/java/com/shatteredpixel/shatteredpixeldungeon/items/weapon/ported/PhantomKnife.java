@@ -21,6 +21,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported;
 
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
+
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -51,6 +53,15 @@ import com.watabou.utils.Random;
  * 但 minimal fork 未随迁对应 .properties，缺失时会显示回退键名。
  */
 public class PhantomKnife extends AmbushWeapon {
+
+	static {
+		SpriteRegistry.r("ported.phantom_knife", "sprites/ported/phantom_knife.png", 0, 0, 64, 64);
+	}
+
+	@Override
+	public String spriteRegion() {
+		return "ported.phantom_knife";
+}
 
 	private static final String CHARGE = "charge";
 	private static final String CHARGE_CAP = "chargeCap";

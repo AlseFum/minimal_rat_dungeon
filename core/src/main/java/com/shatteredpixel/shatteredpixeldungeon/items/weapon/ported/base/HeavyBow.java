@@ -13,6 +13,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.base;
 
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
+
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
@@ -37,6 +39,15 @@ import java.util.ArrayList;
  * is exactly 1-2 tiles away in a cardinal direction.
  */
 public class HeavyBow extends Weapon {
+
+	static {
+		SpriteRegistry.r("ported.province_bow", "sprites/ported/province_bow.png", 0, 0, 32, 32);
+	}
+
+	@Override
+	public String spriteRegion() {
+		return "ported.province_bow";
+}
 
 	public static final String AC_SHOOT = "SHOOT";
 

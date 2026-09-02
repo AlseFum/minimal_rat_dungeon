@@ -1,5 +1,7 @@
-package com.shatteredpixel.shatteredpixeldungeon.actors;
+package com.shatteredpixel.shatteredpixeldungeon.mechanics;
 
+import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;

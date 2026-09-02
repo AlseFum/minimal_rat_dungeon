@@ -11,7 +11,7 @@
  * (at your option) any later version.
  */
 
-package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.base;
+package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported;
 
 import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
 

@@ -18,3 +18,7 @@ local.properties
 #intellij project files
 *.iml
 *.idea
+
+# IDE build output (Eclipse-style bin dirs)
+bin/
+build/

@@ -64,6 +64,7 @@ import com.shatteredpixel.shatteredpixeldungeon.journal.Bestiary;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Document;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Journal;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Notes;
+import com.shatteredpixel.shatteredpixeldungeon.levels.DungeonRegion;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
 import com.shatteredpixel.shatteredpixeldungeon.levels.RegionVariant;
 import com.shatteredpixel.shatteredpixeldungeon.levels.RegularLevel;
@@ -618,6 +619,12 @@ public class GameScene extends PixelScene {
 				GLog.h(Messages.get(this, "resurrect"), Dungeon.depth);
 			} else {
 				GLog.h(Messages.get(this, "return"), Dungeon.depth);
+			}
+
+			//announce the region's entry message, if it has one
+			DungeonRegion region = DungeonRegion.find(Dungeon.level.regionId);
+			if (region != null && region.enterMessage() != null) {
+				GLog.w(region.enterMessage());
 			}
 
 			if (Dungeon.hero.hasTalent(Talent.ROGUES_FORESIGHT)

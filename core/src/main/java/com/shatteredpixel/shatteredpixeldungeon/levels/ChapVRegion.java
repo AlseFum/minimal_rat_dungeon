@@ -14,6 +14,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.levels;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mapDevice.ArrowDevice;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
@@ -40,7 +41,7 @@ public class ChapVRegion extends DungeonRegion {
 
 	@Override
 	public float weight() {
-		return Dungeon.mode == Dungeon.Mode.DEMO && Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 1 : 0;
+		return Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 1 : 0;
 	}
 
 	@Override
@@ -129,5 +130,9 @@ public class ChapVRegion extends DungeonRegion {
 			len++;
 		}
 		return len;
+	}
+	@Override
+	public String enterMessage() {
+		return Messages.get(this, "enter");
 	}
 }

@@ -15,21 +15,10 @@ package com.shatteredpixel.shatteredpixeldungeon.items;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.AscalonAOE;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.BannerWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.BaseballBat;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.BerserkWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.BlastWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.BloodWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.Chakram;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.Cudgel;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.DeployablewCrossBow;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.MelanthaSword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.PhantomKnife;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.RhodesStandardBow;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.Saw;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.WornShortsword;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.Baseball;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.CircularSawBlade;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
@@ -91,11 +80,10 @@ public class DebugWeaponBox extends Item implements DebugTool {
 	}
 
 	private static final Class<? extends Item>[] WEAPONS = new Class[]{
-			AscalonAOE.class, BannerWeapon.class, Baseball.class, BaseballBat.class,
-			BerserkWeapon.class, BlastWeapon.class, BloodWeapon.class, Chakram.class,
-			CircularSawBlade.class, Cudgel.class, DeployablewCrossBow.class,
-			MelanthaSword.class, PhantomKnife.class, RhodesStandardBow.class,
-			Saw.class, WornShortsword.class
+			AscalonAOE.class, BaseballBat.class,
+			Chakram.class,
+			DeployablewCrossBow.class,
+			PhantomKnife.class,
 	};
 
 	@Override

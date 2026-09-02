@@ -23,10 +23,10 @@ package com.shatteredpixel.shatteredpixeldungeon.items.artifacts;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageInfo;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageType;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageWay;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageInfo;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageWay;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;

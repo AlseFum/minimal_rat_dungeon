@@ -21,13 +21,14 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors;
 
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Electricity;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageInfo;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageType;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageWay;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageInfo;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageWay;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.StormCloud;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.ToxicGas;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Adrenaline;
@@ -683,7 +684,7 @@ public abstract class Char extends Actor {
 		}
 	}
 
-	static int hitMissIcon = -1;
+	public static int hitMissIcon = -1;
 
 	public int attackSkill( Char target ) {
 		return 0;

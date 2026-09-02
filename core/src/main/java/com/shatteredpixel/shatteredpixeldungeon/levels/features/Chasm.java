@@ -20,10 +20,10 @@
  */
 
 package com.shatteredpixel.shatteredpixeldungeon.levels.features;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageInfo;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageType;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageWay;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageInfo;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageWay;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;

@@ -31,10 +31,10 @@ import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageInfo;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageType;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageWay;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageInfo;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageWay;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.SacrificialFire;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AdrenalineSurge;
@@ -123,7 +123,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLivingEarth;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Crossbow;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.BerserkWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Flail;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
@@ -708,10 +707,6 @@ public class Hero extends Char {
 
 	@Override
 	public int drRoll() {
-		if (buff(BerserkWeapon.BerserkBuff.class) != null) {
-			return 0;
-		}
-
 		int dr = super.drRoll();
 
 		if (belongings.armor() != null) {

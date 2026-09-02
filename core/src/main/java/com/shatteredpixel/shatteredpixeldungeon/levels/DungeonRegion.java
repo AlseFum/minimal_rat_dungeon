@@ -71,6 +71,15 @@ public abstract class DungeonRegion {
 	public void configureLevel(Level level) { }
 
 	/**
+	 * Called when the hero enters a floor of this region (after the level
+	 * has been loaded and the hero placed). Return a message to show, or
+	 * null for no announcement.
+	 */
+	public String enterMessage() {
+		return null;
+	}
+
+	/**
 	 * Picks up to {@code count} random open cells (passable, no mob, trap or
 	 * entity), each at least {@code minDist} tiles away from the others.
 	 * Returns fewer when the level does not have enough open space.

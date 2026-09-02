@@ -23,10 +23,10 @@ package com.shatteredpixel.shatteredpixeldungeon.items.weapon.enchantments;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageInfo;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageType;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Proc.DamageWay;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageInfo;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageType;
+import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageWay;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.FlameParticle;

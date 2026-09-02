@@ -14,6 +14,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.levels;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.IceCrystalAltar;
 
@@ -35,7 +36,7 @@ public class ChapVIRegion extends DungeonRegion {
 
 	@Override
 	public float weight() {
-		return Dungeon.mode == Dungeon.Mode.DEMO && Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 1 : 0;
+		return Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 1 : 0;
 	}
 
 	@Override
@@ -51,5 +52,10 @@ public class ChapVIRegion extends DungeonRegion {
 		for (int cell : spots) {
 			Blob.seed(cell, 50, IceCrystalAltar.class, level);
 		}
+	}
+
+	@Override
+	public String enterMessage() {
+		return Messages.get(this, "enter");
 	}
 }

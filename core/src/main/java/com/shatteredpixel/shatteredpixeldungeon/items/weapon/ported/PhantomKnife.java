@@ -32,7 +32,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.base.AmbushWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Dagger;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.GhostSprite;
@@ -44,18 +45,77 @@ import com.watabou.utils.Random;
 
 /**
  * 由 ZootDungeon 项目的 items.weapon.PhantomKnife 移植而来。
- * 原基类 AmbushWeapon 在 minimal fork 中已存在于 items.weapon.base（Dirk/AssassinsBlade 同基类），
- * 偷袭偏伤、max 公式与偷袭系决斗者技能均继承自该基类；
+ * 偷袭偏伤与 max 公式内联在此（原 AmbushWeapon 基类已并入），
+ * 偷袭系决斗者技能复用 Dagger.sneakAbility。
  * image/tier/bones 亦沿用基类占位（DAGGER + TODO 图标，原 TextureRegistry 专用贴图未移植）。
  *
  * <p>note: 文本（name、desc_intro、desc_charge、desc_body、msg_charge_up、msg_summoned、
  * prompt、ability_name、ability_desc、typical_ability_desc、ability_target_range、ability_occupied）仍通过 Messages 读取，
  * 但 minimal fork 未随迁对应 .properties，缺失时会显示回退键名。
  */
-public class PhantomKnife extends AmbushWeapon {
+public class PhantomKnife extends MeleeWeapon {
+
+	/** fraction of the damage range kept as a lower bound on surprise hits */
+	public float ambushRate = 0.5f;
 
 	static {
 		SpriteRegistry.r("ported.phantom_knife", "sprites/ported/phantom_knife.png", 0, 0, 64, 64);
+	}
+
+	@Override
+	public int max(int lvl) {
+		return  4*(tier+1) +
+				lvl*(tier+1);
+	}
+
+	@Override
+	public int damageRoll(Char owner) {
+		if (owner instanceof Hero) {
+			Hero hero = (Hero) owner;
+			Char enemy = hero.enemy();
+			if (enemy instanceof Mob && ((Mob) enemy).surprisedBy(hero)) {
+				//surprise hit: bias the roll towards the high end
+				int lvl = buffedLvl();
+				int mn = min(lvl);
+				int mx = max(lvl);
+				int diff = mx - mn;
+				int biasedMin = mn + Math.round(diff * ambushRate);
+				if (biasedMin > mx) biasedMin = mx;
+
+				int damage = Random.NormalIntRange(biasedMin, mx);
+				damage = augment.damageFactor(damage);
+				int exStr = hero.STR() - STRReq();
+				if (exStr > 0) {
+					damage += Hero.heroDamageIntRange(0, exStr);
+				}
+				return damage;
+			}
+		}
+		return super.damageRoll(owner);
+	}
+
+	@Override
+	public String targetingPrompt() {
+		return Messages.get(this, "prompt");
+	}
+
+	@Override
+	protected void duelistAbility(Hero hero, Integer target) {
+		Dagger.sneakAbility(hero, target, 5, 2+buffedLvl(), this);
+	}
+
+	@Override
+	public String abilityInfo() {
+		if (levelKnown){
+			return Messages.get(this, "ability_desc", 2+buffedLvl());
+		} else {
+			return Messages.get(this, "typical_ability_desc", 2);
+		}
+	}
+
+	@Override
+	public String upgradeAbilityStat(int level) {
+		return Integer.toString(2+level);
 	}
 
 	@Override

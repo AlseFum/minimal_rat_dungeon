@@ -13,19 +13,22 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported;
 
-import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
-
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
+import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.Baseball;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
 
 import java.util.ArrayList;
 
-/** A baseball bat: throws a baseball from the inventory with bat-sourced bonuses. */
+/**
+ * A baseball bat which throws a {@link Baseball} from the inventory with
+ * bat-sourced bonuses.
+ */
 public class BaseballBat extends MeleeWeapon {
 
 	static {
@@ -35,7 +38,7 @@ public class BaseballBat extends MeleeWeapon {
 	@Override
 	public String spriteRegion() {
 		return "ported.baseball_bat";
-}
+	}
 
 	public static final String AC_THROW_BASEBALL = "THROW_BASEBALL";
 
@@ -85,5 +88,68 @@ public class BaseballBat extends MeleeWeapon {
 			}
 		}
 		return null;
+	}
+
+	/** A baseball. When thrown by the bat it deals 3x damage with 2.5x accuracy. */
+	public static class Baseball extends MissileWeapon {
+
+		static {
+			SpriteRegistry.r("ported.baseball", "sprites/ported/cuora_baseball.png", 0, 0, 32, 32);
+		}
+
+		@Override
+		public String spriteRegion() {
+			return "ported.baseball";
+		}
+
+		private boolean batSourced = false;
+
+		{
+			image = ItemSpriteSheet.THROWING_STONE; //TODO: dedicated icon
+			hitSound = Assets.Sounds.HIT_CRUSH;
+			hitSoundPitch = 1.2f;
+
+			tier = 1;
+			baseUses = 10;
+			sticky = false;
+			bones = true;
+		}
+
+		public void markBatSourced() {
+			this.batSourced = true;
+		}
+
+		@Override
+		public int min(int lvl) {
+			return 1 * tier + lvl;                      //lower than the standard 2*tier+lvl
+		}
+
+		@Override
+		public int max(int lvl) {
+			return 2 * tier + lvl;                      //lower than the standard 5*tier+2*lvl
+		}
+
+		@Override
+		public int damageRoll(Char owner) {
+			int damage = super.damageRoll(owner);
+			if (batSourced) {
+				damage *= 3;                            //3x damage when hit by the bat
+			}
+			return damage;
+		}
+
+		@Override
+		public float accuracyFactor(Char owner, Char target) {
+			if (batSourced) {
+				return 2.5f;                            //harder to dodge when hit by the bat
+			}
+			return super.accuracyFactor(owner, target);
+		}
+
+		@Override
+		protected void onThrow(int cell) {
+			super.onThrow(cell);
+			batSourced = false;
+		}
 	}
 }

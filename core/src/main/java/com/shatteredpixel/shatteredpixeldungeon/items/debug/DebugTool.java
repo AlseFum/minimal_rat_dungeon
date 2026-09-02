@@ -11,7 +11,7 @@
  * (at your option) any later version.
  */
 
-package com.shatteredpixel.shatteredpixeldungeon.items;
+package com.shatteredpixel.shatteredpixeldungeon.items.debug;
 
 /** Marker for items which belong in the debug tool collection. */
 public interface DebugTool {

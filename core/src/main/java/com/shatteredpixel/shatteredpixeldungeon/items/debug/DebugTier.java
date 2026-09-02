@@ -19,7 +19,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package com.shatteredpixel.shatteredpixeldungeon.items;
+package com.shatteredpixel.shatteredpixeldungeon.items.debug;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 
 import java.util.ArrayList;
 

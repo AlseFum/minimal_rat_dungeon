@@ -11,7 +11,8 @@
  * (at your option) any later version.
  */
 
-package com.shatteredpixel.shatteredpixeldungeon.items;
+package com.shatteredpixel.shatteredpixeldungeon.items.debug;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.AscalonAOE;

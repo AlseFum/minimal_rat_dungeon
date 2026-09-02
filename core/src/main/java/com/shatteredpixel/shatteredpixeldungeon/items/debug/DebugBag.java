@@ -11,18 +11,19 @@
  * (at your option) any later version.
  */
 
-package com.shatteredpixel.shatteredpixeldungeon.items.bags;
+package com.shatteredpixel.shatteredpixeldungeon.items.debug;
+import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
 
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugNextFloor;
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugMapDevice;
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugArrowDevice;
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugHeatPumpChannel;
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugIceCrystalAltar;
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugOriginiumAltar;
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugWeaponBox;
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugTalentLayers;
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugTier;
-import com.shatteredpixel.shatteredpixeldungeon.items.DebugTool;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugNextFloor;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugMapDevice;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugArrowDevice;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugHeatPumpChannel;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugIceCrystalAltar;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugOriginiumAltar;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugWeaponBox;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugTalentLayers;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugTier;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugTool;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 

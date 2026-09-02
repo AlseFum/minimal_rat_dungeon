@@ -11,12 +11,13 @@
  * (at your option) any later version.
  */
 
-package com.shatteredpixel.shatteredpixeldungeon.items;
+package com.shatteredpixel.shatteredpixeldungeon.items.debug;
+import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
-import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.HeatPumpChannel;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.IceCrystalAltar;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
@@ -26,8 +27,8 @@ import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
 
 import java.util.ArrayList;
 
-/** Seeds a {@link HeatPumpChannel} on a selected floor cell. */
-public class DebugHeatPumpChannel extends Item implements DebugTool {
+/** Seeds an {@link IceCrystalAltar} on a selected floor cell. */
+public class DebugIceCrystalAltar extends Item implements DebugTool {
 
 	private static final String AC_PLACE = "PLACE";
 
@@ -62,16 +63,16 @@ public class DebugHeatPumpChannel extends Item implements DebugTool {
 					|| !Dungeon.level.passable[cell]
 					|| Actor.findChar(cell) != null
 					|| Dungeon.level.entityAt(cell) != null) {
-				GLog.w(Messages.get(DebugHeatPumpChannel.class, "invalid"));
+				GLog.w(Messages.get(DebugIceCrystalAltar.class, "invalid"));
 				return;
 			}
 
-			GameScene.add(Blob.seed(cell, 50, HeatPumpChannel.class));
+			GameScene.add(Blob.seed(cell, 50, IceCrystalAltar.class));
 		}
 
 		@Override
 		public String prompt() {
-			return Messages.get(DebugHeatPumpChannel.class, "prompt");
+			return Messages.get(DebugIceCrystalAltar.class, "prompt");
 		}
 	};
 

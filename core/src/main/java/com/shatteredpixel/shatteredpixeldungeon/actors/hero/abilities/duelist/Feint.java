@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.duelist;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.BlobImmunity;
@@ -190,10 +191,10 @@ public class Feint extends ArmorAbility {
 		}
 
 		@Override
-		protected boolean act() {
+		protected ActionSubmission proposeAction() {
 			destroy();
 			sprite.die();
-			return true;
+			return ActionSubmission.idle();
 		}
 
 		public void syncToHero(Hero hero){

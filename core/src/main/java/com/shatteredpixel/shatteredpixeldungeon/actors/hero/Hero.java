@@ -29,8 +29,11 @@ import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
 import com.shatteredpixel.shatteredpixeldungeon.SPDSettings;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionResult;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.FailCause;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageInfo;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageType;
@@ -49,6 +52,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Combo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Drowsy;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Foresight;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FrostAura;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.GreaterHaste;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.HeroDisguise;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.HoldFast;
@@ -223,6 +227,11 @@ public class Hero extends Char {
 
 	//reference to the enemy the hero is currently in the process of attacking
 	private Char attackTarget;
+
+	//cache of the attack delay for the attack currently being attempted.
+	//computed once at proposal time (attackDelay() may have side effects),
+	//and shared by the proposal half and the completion half of the cost.
+	private float currentAttackDelay = 1f;
 
 	/** The hero's current attack target, or null when not attacking. */
 	public Char enemy() {
@@ -900,15 +909,15 @@ public class Hero extends Char {
 	}
 	
 	@Override
-	public boolean act() {
-		
+	protected ActionSubmission proposeAction() {
+
 		//calls to dungeon.observe will also update hero's local FOV.
 		fieldOfView = Dungeon.level.heroFOV;
 
 		if (buff(Endure.EndureTracker.class) != null){
 			buff(Endure.EndureTracker.class).endEnduring();
 		}
-		
+
 		if (!ready) {
 			//do a full observe (including fog update) if not resting.
 			if (!resting || buff(MindVision.class) != null) {
@@ -918,27 +927,179 @@ public class Hero extends Char {
 				Dungeon.level.updateFieldOfView(this, fieldOfView);
 			}
 		}
-		
+
 		checkVisibleMobs();
 		BuffIndicator.refreshHero();
 		BuffIndicator.refreshBoss();
-		
+
 		if (paralysed > 0) {
-			
+
 			curAction = null;
-			
-			spendAndNext( TICK );
-			return false;
+
+			busy();
+			spend( TICK );
+			return ActionSubmission.idle();
 		}
-		
-		boolean actResult;
+
+		if(hasTalent(Talent.BARKSKIN) && Dungeon.level.map[pos] == Terrain.FURROWED_GRASS){
+			Barkskin.conditionallyAppend(this, (lvl*pointsInTalent(Talent.BARKSKIN))/2, 1 );
+		}
+
 		if (curAction == null) {
-			
+
+			//resting spends the whole turn in the proposal phase
 			if (resting) {
 				spendConstant( TIME_TO_REST );
+			}
+
+			return ActionSubmission.idle();
+
+		} else {
+
+			resting = false;
+
+			ready = false;
+
+			if (curAction instanceof HeroAction.Move) {
+				HeroAction.Move action = (HeroAction.Move) curAction;
+
+				//already arrived - hero moves in place if there is grass to trample
+				if (action.dst == pos) {
+					if (canSelfTrample()){
+						spend( 0.5f / speed() );
+						return ActionSubmission.move( action.dst );
+					} else {
+						return ActionSubmission.idle();
+					}
+				}
+
+				//fail fast (without spending) if the immediate step is blocked,
+				//matching the old zero-cost behavior for wall/occupant taps
+				if (Dungeon.level.adjacent( pos, action.dst )
+						&& (Actor.findChar( action.dst ) != null
+							|| !Dungeon.level.passable[action.dst] && !Dungeon.level.avoid[action.dst])){
+					return ActionSubmission.idle();
+				}
+
+				//half of the step's cost; the other half is spent when the step executes
+				spend( moveStepDelay() / (2f * speed()) );
+				return ActionSubmission.move( action.dst );
+
+			} else if (curAction instanceof HeroAction.Attack) {
+				HeroAction.Attack action = (HeroAction.Attack) curAction;
+				Char target = action.target;
+
+				if (target != null && isCharmedBy( target )){
+					GLog.w( Messages.get(Charm.class, "cant_attack"));
+					curAction = null;
+					return ActionSubmission.idle();
+				}
+
+				if (target != null && target.isAlive() && canAttack( target ) && target.invisible == 0){
+
+					//attack delay is cached here as attackDelay() may have side effects,
+					//and the second half of the cost is spent on attack completion
+					currentAttackDelay = attackDelay();
+					spend( currentAttackDelay / 2f );
+					return ActionSubmission.attack( target );
+
+				} else {
+
+					//otherwise close in on the target (or its corpse) to attack it
+					if (target != null && target.pos != pos && fieldOfView[target.pos]){
+						spend( moveStepDelay() / (2f * speed()) );
+						return ActionSubmission.move( target.pos );
+					}
+
+					return ActionSubmission.idle();
+				}
+
+			} else if (curAction instanceof HeroAction.Interact) {
+				Char ch = ((HeroAction.Interact)curAction).ch;
+
+				if (ch != null && ch.isAlive() && ch.canInteract( this )){
+					return ActionSubmission.interact( ch );
+				}
+
+				//otherwise approach the char
+				if (ch != null && ch.pos != pos && fieldOfView[ch.pos]){
+					spend( moveStepDelay() / (2f * speed()) );
+					return ActionSubmission.interact( ch );
+				}
+
+				return ActionSubmission.idle();
+
+			} else if (curAction instanceof HeroAction.Buy) {
+				if (curAction.dst != pos) spend( moveStepDelay() / (2f * speed()) );
+				return new ActionSubmission( ActionSubmission.BUY, curAction.dst );
+
+			} else if (curAction instanceof HeroAction.Alchemy) {
+				if (curAction.dst != pos) spend( moveStepDelay() / (2f * speed()) );
+				return new ActionSubmission( ActionSubmission.ALCHEMY, curAction.dst );
+
+			} else if (curAction instanceof HeroAction.PickUp) {
+				if (curAction.dst != pos) spend( moveStepDelay() / (2f * speed()) );
+				return new ActionSubmission( ActionSubmission.PICK_UP, curAction.dst );
+
+			} else if (curAction instanceof HeroAction.OpenChest) {
+				if (curAction.dst != pos && !Dungeon.level.adjacent( pos, curAction.dst )){
+					spend( moveStepDelay() / (2f * speed()) );
+				}
+				return new ActionSubmission( ActionSubmission.OPEN_CHEST, curAction.dst );
+
+			} else if (curAction instanceof HeroAction.Unlock) {
+				if (!Dungeon.level.adjacent( pos, curAction.dst )){
+					spend( moveStepDelay() / (2f * speed()) );
+				}
+				return new ActionSubmission( ActionSubmission.UNLOCK, curAction.dst );
+
+			} else if (curAction instanceof HeroAction.Mine) {
+				if (Dungeon.level.adjacent( pos, curAction.dst )){
+					spend( 0.5f * TICK );
+				} else {
+					spend( moveStepDelay() / (2f * speed()) );
+				}
+				return new ActionSubmission( ActionSubmission.MINE, curAction.dst );
+
+			} else if (curAction instanceof HeroAction.LvlTransition) {
+				LevelTransition transition = Dungeon.level.getTransition( curAction.dst );
+				if (transition == null || !transition.inside( pos )){
+					spend( moveStepDelay() / (2f * speed()) );
+				}
+				return new ActionSubmission( ActionSubmission.TRANSITION, curAction.dst );
+
+			}
+
+			return ActionSubmission.idle();
+		}
+	}
+
+	@Override
+	protected ActionResult adjudicate( ActionSubmission sub ) {
+		if (sub.name == ActionSubmission.ATTACK) {
+
+			//the proposal already gates these conditions, this is a defensive re-check
+			//in case the world changed between proposal and execution
+			Char target = (Char)sub.param;
+			if (target == null || !target.isAlive() || !Actor.chars().contains( target )){
+				return ActionResult.fail( FailCause.TARGET_GONE );
+			}
+			if (!canAttack( target ) || target.invisible > 0){
+				return ActionResult.fail( FailCause.TARGET_OUT_OF_RANGE );
+			}
+
+		}
+		return ActionResult.OK;
+	}
+
+	@Override
+	protected boolean doAction( ActionSubmission sub, ActionResult result ) {
+
+		if (sub.name == ActionSubmission.IDLE) {
+
+			if (paralysed > 0){
 				next();
-			} else {
-				ready();
+				return false;
 			}
 
 			//if we just loaded into a level and have a search buff, make sure to process them
@@ -949,55 +1110,63 @@ public class Hero extends Char {
 					buff(TalismanOfForesight.Foresight.class).checkAwareness();
 				}
 			}
-			
-			actResult = false;
-			
-		} else {
-			
-			resting = false;
-			
-			ready = false;
-			
-			if (curAction instanceof HeroAction.Move) {
-				actResult = actMove( (HeroAction.Move)curAction );
-				
-			} else if (curAction instanceof HeroAction.Interact) {
-				actResult = actInteract( (HeroAction.Interact)curAction );
-				
-			} else if (curAction instanceof HeroAction.Buy) {
-				actResult = actBuy( (HeroAction.Buy)curAction );
-				
-			}else if (curAction instanceof HeroAction.PickUp) {
-				actResult = actPickUp( (HeroAction.PickUp)curAction );
-				
-			} else if (curAction instanceof HeroAction.OpenChest) {
-				actResult = actOpenChest( (HeroAction.OpenChest)curAction );
-				
-			} else if (curAction instanceof HeroAction.Unlock) {
-				actResult = actUnlock((HeroAction.Unlock) curAction);
-				
-			} else if (curAction instanceof HeroAction.Mine) {
-				actResult = actMine( (HeroAction.Mine)curAction );
 
-			}else if (curAction instanceof HeroAction.LvlTransition) {
-				actResult = actTransition( (HeroAction.LvlTransition)curAction );
-				
-			} else if (curAction instanceof HeroAction.Attack) {
-				actResult = actAttack( (HeroAction.Attack)curAction );
-				
-			} else if (curAction instanceof HeroAction.Alchemy) {
-				actResult = actAlchemy( (HeroAction.Alchemy)curAction );
-				
-			} else {
-				actResult = false;
+			if (resting){
+				next();
+				return false;
 			}
+
+			ready();
+			return false;
 		}
-		
-		if(hasTalent(Talent.BARKSKIN) && Dungeon.level.map[pos] == Terrain.FURROWED_GRASS){
-			Barkskin.conditionallyAppend(this, (lvl*pointsInTalent(Talent.BARKSKIN))/2, 1 );
+
+		if (!result.isOk()) {
+
+			//adjudicated failures are a defensive net - proposals gate these conditions,
+			//so normally nothing arrives here. fail costs are already paid in the proposal.
+			if (sub.name == ActionSubmission.ATTACK){
+				attackTarget = null;
+				if (result.cause == FailCause.FROST_AURA){
+					GLog.w( Messages.get(FrostAura.class, "blocked") );
+				}
+			}
+			ready();
+			return false;
 		}
-		
-		return actResult;
+
+		if (sub.name == ActionSubmission.MOVE) {
+			return doMove( (Integer)sub.param );
+
+		} else if (sub.name == ActionSubmission.ATTACK) {
+			return doAttack( (Char)sub.param );
+
+		} else if (sub.name == ActionSubmission.INTERACT) {
+			return actInteract( (HeroAction.Interact)curAction );
+
+		} else if (sub.name == ActionSubmission.BUY) {
+			return actBuy( (HeroAction.Buy)curAction );
+
+		} else if (sub.name == ActionSubmission.PICK_UP) {
+			return actPickUp( (HeroAction.PickUp)curAction );
+
+		} else if (sub.name == ActionSubmission.OPEN_CHEST) {
+			return actOpenChest( (HeroAction.OpenChest)curAction );
+
+		} else if (sub.name == ActionSubmission.UNLOCK) {
+			return actUnlock( (HeroAction.Unlock)curAction );
+
+		} else if (sub.name == ActionSubmission.MINE) {
+			return actMine( (HeroAction.Mine)curAction );
+
+		} else if (sub.name == ActionSubmission.TRANSITION) {
+			return actTransition( (HeroAction.LvlTransition)curAction );
+
+		} else if (sub.name == ActionSubmission.ALCHEMY) {
+			return actAlchemy( (HeroAction.Alchemy)curAction );
+		}
+
+		ready();
+		return false;
 	}
 	
 	public void busy() {
@@ -1046,22 +1215,34 @@ public class Hero extends Char {
 				Dungeon.level.plants.get(pos) != null);
 	}
 	
-	private boolean actMove( HeroAction.Move action ) {
+	//executes a single movement step (proposal already spent half of the step's cost)
+	private boolean doMove( int dst ) {
 
-		if (getCloser( action.dst )) {
-			canSelfTrample = false;
-			return true;
+		if (dst == pos) {
 
-		//Hero moves in place if there is grass to trample
-		} else if (pos == action.dst && canSelfTrample()){
-			canSelfTrample = false;
-			Dungeon.level.pressCell(pos);
-			spendAndNext( 1 / speed() );
-			return false;
-		} else {
+			//hero moves in place if there is grass to trample
+			//(only possible via a Move curAction; the proposal routed other arrivals to IDLE)
+			if (canSelfTrample()){
+				canSelfTrample = false;
+				Dungeon.level.pressCell(pos);
+				spend( 0.5f / speed() );
+				next();
+				return false;
+			}
+
 			ready();
 			return false;
 		}
+
+		if (getCloser( dst )) {
+			if (curAction instanceof HeroAction.Move) {
+				canSelfTrample = false;
+			}
+			return true;
+		}
+
+		ready();
+		return false;
 	}
 	
 	private boolean actInteract( HeroAction.Interact action ) {
@@ -1423,12 +1604,13 @@ public class Hero extends Char {
 									for (int i : PathFinder.NEIGHBOURS9) {
 										GameScene.updateMap( action.dst+i );
 									}
-									spendAndNext(TICK);
+									//only half of the turn - the proposal already spent the other half
+									spendAndNext( 0.5f * TICK );
 									ready();
 								}
 							});
 						} else {
-							spendAndNext(TICK);
+							spendAndNext( 0.5f * TICK ); //only half of the turn - the proposal already spent the other half
 							ready();
 						}
 
@@ -1478,47 +1660,26 @@ public class Hero extends Char {
 		}
 	}
 	
-	private boolean actAttack( HeroAction.Attack action ) {
+	//executes an attack on a target the proposal found attackable
+	//(proposal spent half of the attack delay; the rest is spent on attack completion)
+	private boolean doAttack( Char target ) {
 
-		attackTarget = action.target;
+		attackTarget = target;
 
-		if (isCharmedBy(attackTarget)){
-			GLog.w( Messages.get(Charm.class, "cant_attack"));
-			ready();
-			return false;
-		}
-
-		if (attackTarget.isAlive() && canAttack(attackTarget) && attackTarget.invisible == 0) {
-
-			if (heroClass != HeroClass.DUELIST
-					&& hasTalent(Talent.AGGRESSIVE_BARRIER)
-					&& buff(Talent.AggressiveBarrierCooldown.class) == null
-					&& (HP / (float)HT) <= 0.5f){
-				int shieldAmt = 1 + 2*pointsInTalent(Talent.AGGRESSIVE_BARRIER);
-				Buff.affect(this, Barrier.class).setShield(shieldAmt);
-				sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(shieldAmt), FloatingText.SHIELDING);
-				Buff.affect(this, Talent.AggressiveBarrierCooldown.class, 50f);
-
-			}
-			//attack target cleared on onAttackComplete
-			sprite.attack( attackTarget.pos );
-
-			return false;
-
-		} else {
-
-			if (fieldOfView[attackTarget.pos] && getCloser( attackTarget.pos )) {
-
-				attackTarget = null;
-				return true;
-
-			} else {
-				ready();
-				attackTarget = null;
-				return false;
-			}
+		if (heroClass != HeroClass.DUELIST
+				&& hasTalent(Talent.AGGRESSIVE_BARRIER)
+				&& buff(Talent.AggressiveBarrierCooldown.class) == null
+				&& (HP / (float)HT) <= 0.5f){
+			int shieldAmt = 1 + 2*pointsInTalent(Talent.AGGRESSIVE_BARRIER);
+			Buff.affect(this, Barrier.class).setShield(shieldAmt);
+			sprite.showStatusWithIcon(CharSprite.POSITIVE, Integer.toString(shieldAmt), FloatingText.SHIELDING);
+			Buff.affect(this, Talent.AggressiveBarrierCooldown.class, 50f);
 
 		}
+		//attack target cleared on onAttackComplete
+		sprite.attack( target.pos );
+
+		return false;
 	}
 
 	public Char attackTarget(){
@@ -1824,7 +1985,13 @@ public class Hero extends Char {
 	}
 	
 	private boolean walkingToVisibleTrapInFog = false;
-	
+
+	//the delay for a single step of movement (0 with GreaterHaste, which is charged separately).
+	//shared between the proposal half and the execution half of each step's cost.
+	private float moveStepDelay(){
+		return buff(GreaterHaste.class) != null ? 0f : 1f;
+	}
+
 	private boolean getCloser( final int target ) {
 
 		if (target == pos)
@@ -1892,11 +2059,7 @@ public class Hero extends Char {
 
 		if (step != -1) {
 
-			float delay = 1;
-
-			if (buff(GreaterHaste.class) != null){
-				delay = 0;
-			}
+			float delay = moveStepDelay();
 
 			if (Dungeon.level.pit[step] && !Dungeon.level.solid[step]
 					&& (!flying || buff(Levitation.class) != null && buff(Levitation.class).detachesWithinDelay(delay / speed()))){
@@ -1923,8 +2086,9 @@ public class Hero extends Char {
 			sprite.move(pos, step);
 			move(step);
 
-			spend( delay / speed() );
-			
+			//only half of the step's cost - the proposal already spent the other half
+			spend( delay / (2f * speed()) );
+
 			search(false);
 
 			return true;
@@ -2291,7 +2455,8 @@ public class Hero extends Char {
 		boolean hit = attack(attackTarget, 1f, 0f, 1f, hitCount);
 
 		Invisibility.dispel();
-		spend( attackDelay() );
+		//only half of the attack delay - the proposal already spent the other half
+		spend( currentAttackDelay / 2f );
 
 		if (hit && subClass == HeroSubClass.GLADIATOR && wasEnemy){
 			Buff.affect( this, Combo.class ).hit(attackTarget);

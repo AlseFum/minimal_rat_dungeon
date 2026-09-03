@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.wands;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -443,15 +444,15 @@ public class WandOfRegrowth extends Wand {
 		}
 
 		@Override
-		protected boolean act() {
-			super.act();
+		protected ActionSubmission proposeAction() {
+			ActionSubmission sub = super.proposeAction();
 
 			if (--HP <= 0){
 				destroy();
 				sprite.die();
 			}
 
-			return true;
+			return sub;
 		}
 
 		@Override

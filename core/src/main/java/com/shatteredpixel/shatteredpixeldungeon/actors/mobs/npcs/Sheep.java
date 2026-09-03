@@ -23,6 +23,8 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Bestiary;
@@ -44,7 +46,7 @@ public class Sheep extends NPC {
 	private float lifespan;
 
 	@Override
-	protected boolean act() {
+	protected ActionSubmission proposeAction() {
 		if (Dungeon.level.heroFOV[pos]){
 			Bestiary.setSeen(getClass());
 		}
@@ -52,7 +54,7 @@ public class Sheep extends NPC {
 
 		destroy();
 		sprite.die();
-		return true;
+		return ActionSubmission.idle();
 	}
 
 	public void initialize(float lifespan){

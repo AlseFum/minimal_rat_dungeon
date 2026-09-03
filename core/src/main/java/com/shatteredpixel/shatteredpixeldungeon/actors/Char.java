@@ -183,7 +183,36 @@ public abstract class Char extends Actor {
 	private LinkedHashSet<Buff> buffs = new LinkedHashSet<>();
 	
 	@Override
-	protected boolean act() {
+	protected final boolean act() {
+		//three-phase turn: propose -> adjudicate -> execute
+		ActionSubmission sub = proposeAction();
+		ActionResult result = Actor.midAction( this, sub );
+		return doAction( sub, result );
+	}
+
+	//decides what this char wants to do this turn, without performing it.
+	//may spend time here (by default half of the action's cost - failure costs this half).
+	//return IDLE when there is nothing to do, having spent the whole turn as appropriate.
+	protected ActionSubmission proposeAction() {
+		updateFovAndThrowItems();
+		return ActionSubmission.idle();
+	}
+
+	//adjudicates a proposal: only re-checks that what was valid at proposal time
+	//is still valid now. unknown action names pass through as OK, by design.
+	protected ActionResult adjudicate( ActionSubmission sub ) {
+		return ActionResult.OK;
+	}
+
+	//executes a proposal (OK) or handles its failure (Fail).
+	//returns true to have Actor.process immediately pick the next actor,
+	//false to park the actor thread (matching the old boolean act() contract).
+	protected boolean doAction( ActionSubmission sub, ActionResult result ) {
+		return false;
+	}
+
+	//recalculates field of view, and throws away any items on top of an immovable char
+	protected void updateFovAndThrowItems(){
 		if (fieldOfView == null || fieldOfView.length != Dungeon.level.length()){
 			fieldOfView = new boolean[Dungeon.level.length()];
 		}
@@ -193,7 +222,6 @@ public abstract class Char extends Actor {
 		if (properties().contains(Property.IMMOVABLE)){
 			throwItems();
 		}
-		return false;
 	}
 
 	protected void throwItems(){

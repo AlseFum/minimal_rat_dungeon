@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.ToxicGas;
@@ -596,7 +597,7 @@ public class DriedRose extends Artifact {
 		}
 
 		@Override
-		protected boolean act() {
+		protected ActionSubmission proposeAction() {
 			updateRose();
 			if (rose == null
 					|| !rose.isEquipped(Dungeon.hero)
@@ -605,9 +606,9 @@ public class DriedRose extends Artifact {
 			}
 			
 			if (!isAlive()) {
-				return true;
+				return ActionSubmission.idle();
 			}
-			return super.act();
+			return super.proposeAction();
 		}
 
 		public static class NoRoseDamage{}

@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.items.wands;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
@@ -465,7 +466,7 @@ public class WandOfLivingEarth extends DamageWand {
 		private class Wandering extends Mob.Wandering{
 
 			@Override
-			public boolean act(boolean enemyInFOV, boolean justAlerted) {
+			public ActionSubmission decide(boolean enemyInFOV, boolean justAlerted) {
 				if (!enemyInFOV){
 					Buff.affect(Dungeon.hero, RockArmor.class).addArmor(wandLevel, HP);
 					if (buff(PowerOfMany.PowerBuff.class) != null){
@@ -474,9 +475,9 @@ public class WandOfLivingEarth extends DamageWand {
 					Dungeon.hero.sprite.centerEmitter().burst(MagicMissile.EarthParticle.ATTRACT, 8 + wandLevel/2);
 					destroy();
 					sprite.die();
-					return true;
+					return ActionSubmission.idle();
 				} else {
-					return super.act(enemyInFOV, justAlerted);
+					return super.decide(enemyInFOV, justAlerted);
 				}
 			}
 

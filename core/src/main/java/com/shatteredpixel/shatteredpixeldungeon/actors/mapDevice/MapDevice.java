@@ -13,6 +13,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.mapDevice;
 
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 
@@ -34,9 +36,9 @@ public abstract class MapDevice extends Mob {
 	}
 
 	@Override
-	protected boolean act() {
+	protected ActionSubmission proposeAction() {
 		spend(TICK);
-		return true;
+		return ActionSubmission.idle();
 	}
 
 	@Override

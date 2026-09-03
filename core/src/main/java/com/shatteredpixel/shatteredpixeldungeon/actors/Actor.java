@@ -25,6 +25,8 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Chill;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FrostAura;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.watabou.noosa.Game;
 import com.watabou.utils.Bundlable;
@@ -241,7 +243,25 @@ public abstract class Actor implements Bundlable {
 	public static int curActorPriority() {
 		return current != null ? current.actPriority : HERO_PRIO;
 	}
-	
+
+	//adjudicates a Char's proposed action before it is executed.
+	//only re-checks that what was valid at proposal time is still valid now.
+	public static ActionResult midAction( Char ch, ActionSubmission sub ){
+		ActionResult result = ch.adjudicate( sub );
+
+		//global rules, applied to every char regardless of type
+		if (result.isOk() && sub.name == ActionSubmission.ATTACK){
+			Char target = (Char)sub.param;
+			if (target != null && target.buff( FrostAura.class ) != null){
+				//attacks against a frost aura fail, and chill the attacker
+				Buff.prolong( ch, Chill.class, FrostAura.CHILL_DURATION );
+				return ActionResult.fail( FailCause.FROST_AURA );
+			}
+		}
+
+		return result;
+	}
+
 	public static boolean keepActorThreadAlive = true;
 	
 	public static void process() {

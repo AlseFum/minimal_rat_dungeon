@@ -23,6 +23,8 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.cleric;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionResult;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
@@ -266,18 +268,23 @@ public class PowerOfMany extends ArmorAbility {
 		}
 
 		@Override
-		protected boolean act() {
+		protected ActionSubmission proposeAction() {
 			if (buff(PowerOfMany.PowerBuff.class) == null){
 				die(null);
-				return true;
+				return ActionSubmission.idle();
 			}
+			return super.proposeAction();
+		}
+
+		@Override
+		protected boolean doAction( ActionSubmission sub, ActionResult result ) {
 			int oldPos = pos;
-			boolean result = super.act();
+			boolean r = super.doAction( sub, result );
 			//partially simulates how the hero switches to idle animation
 			if ((pos == target || oldPos == pos) && sprite.looping()){
 				sprite.idle();
 			}
-			return result;
+			return r;
 		}
 
 		@Override

@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Adrenaline;
@@ -229,7 +230,7 @@ public class Ratmogrify extends ArmorAbility {
 		private float timeLeft = 6f;
 
 		@Override
-		protected boolean act() {
+		protected ActionSubmission proposeAction() {
 			if (timeLeft <= 0){
 				Mob original = getOriginal();
 				this.original = null;
@@ -239,9 +240,9 @@ public class Ratmogrify extends ArmorAbility {
 				sprite.killAndErase();
 				CellEmitter.get(original.pos).burst(Speck.factory(Speck.WOOL), 4);
 				Sample.INSTANCE.play(Assets.Sounds.PUFF);
-				return true;
+				return ActionSubmission.idle();
 			} else {
-				return super.act();
+				return super.proposeAction();
 			}
 		}
 

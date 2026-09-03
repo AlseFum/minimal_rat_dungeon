@@ -16,6 +16,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mapDevice;
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
@@ -98,7 +99,7 @@ public class ArrowDevice extends MapDevice {
 	}
 
 	@Override
-	protected boolean act() {
+	protected ActionSubmission proposeAction() {
 		switch (state) {
 			case IDLE:
 				if (heroInRay()) {
@@ -122,7 +123,7 @@ public class ArrowDevice extends MapDevice {
 				break;
 		}
 		spend(TICK);
-		return true;
+		return ActionSubmission.idle();
 	}
 
 	//all cells the arrows would fly through, stopping at walls and closed doors

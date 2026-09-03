@@ -373,7 +373,7 @@ public class WandOfWarding extends Wand {
 		}
 
 		private void zap() {
-			spend( 1f );
+			spend( 0.5f ); //only half - the proposal already spent the other half
 
 			//always hits
 			int dmg = Hero.heroDamageIntRange( 2 + wandLevel, 8 + 4*wandLevel );

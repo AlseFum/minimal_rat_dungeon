@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.SpriteRegistry;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
@@ -336,10 +337,10 @@ public class PhantomKnife extends MeleeWeapon {
 		}
 
 		@Override
-		protected boolean act() {
+		protected ActionSubmission proposeAction() {
 			if (Dungeon.hero == null || !Dungeon.hero.isAlive()) {
 				die(null);
-				return true;
+				return ActionSubmission.idle();
 			}
 
 			if (fieldOfView == null || fieldOfView.length != Dungeon.level.length()) {
@@ -357,7 +358,7 @@ public class PhantomKnife extends MeleeWeapon {
 					idleTurns++;
 					if (idleTurns >= MAX_IDLE_TURNS) {
 						die(null);
-						return true;
+						return ActionSubmission.idle();
 					}
 					state = PASSIVE;
 				}
@@ -365,7 +366,7 @@ public class PhantomKnife extends MeleeWeapon {
 				idleTurns = 0;
 			}
 
-			return super.act();
+			return super.proposeAction();
 		}
 
 		private Char findTargetInFOV() {

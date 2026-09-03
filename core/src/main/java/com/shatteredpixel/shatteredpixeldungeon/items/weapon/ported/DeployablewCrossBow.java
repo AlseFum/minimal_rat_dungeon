@@ -15,6 +15,8 @@ package com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionResult;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -516,7 +518,7 @@ public class DeployablewCrossBow extends HeavyBow {
 		}
 
 		@Override
-		protected boolean act() {
+		protected ActionSubmission proposeAction() {
 			if (fieldOfView == null || fieldOfView.length != Dungeon.level.length()) {
 				fieldOfView = new boolean[Dungeon.level.length()];
 			}
@@ -529,15 +531,14 @@ public class DeployablewCrossBow extends HeavyBow {
 				} else {
 					spend(TICK);
 				}
-				return true;
+				return ActionSubmission.idle();
 			}
 
 			spend(TICK);
 
 			if (stepDelta == 0) {
-				return true;
+				return ActionSubmission.idle();
 			}
-
 			Char shootTarget = null;
 			for (int k = 1; k <= MAX_SHOOT_DISTANCE; k++) {
 				int c = pos + k * stepDelta;
@@ -555,32 +556,42 @@ public class DeployablewCrossBow extends HeavyBow {
 					break;
 				}
 			}
-
-			if (shootTarget != null && sprite != null) {
-				final Char tgt = shootTarget;
-				final LineBolt bolt = blade.lineBolt();
-				Sample.INSTANCE.play(Assets.Sounds.ATK_CROSSBOW, 1, Random.Float(0.87f, 1.15f));
-				sprite.zap(tgt.pos, () -> {
-					sprite.idle();
-					if (sprite.parent == null) {
-						blade.targetPos = tgt.pos;
-						owner.shoot(tgt, bolt);
-						return;
-					}
-					Callback onHit = () -> {
-						blade.targetPos = tgt.pos;
-						owner.shoot(tgt, bolt);
-					};
-					MissileSprite ms = (MissileSprite) sprite.parent.recycle(MissileSprite.class);
-					if (tgt.sprite != null) {
-						ms.reset(sprite, tgt.sprite, bolt, onHit);
-					} else {
-						ms.reset(sprite, tgt.pos, bolt, onHit);
-					}
-				});
+			if (shootTarget != null) {
+				return new ActionSubmission( ActionSubmission.FIRE, shootTarget );
 			}
 
-			return true;
+			return ActionSubmission.idle();
+		}
+
+		@Override
+		protected boolean doAction( ActionSubmission sub, ActionResult result ) {
+			if (sub.name == ActionSubmission.FIRE && result.isOk()) {
+				final Char tgt = (Char)sub.param;
+				if (sprite != null) {
+					final LineBolt bolt = blade.lineBolt();
+					Sample.INSTANCE.play(Assets.Sounds.ATK_CROSSBOW, 1, Random.Float(0.87f, 1.15f));
+					sprite.zap(tgt.pos, () -> {
+						sprite.idle();
+						if (sprite.parent == null) {
+							blade.targetPos = tgt.pos;
+							owner.shoot(tgt, bolt);
+							return;
+						}
+						Callback onHit = () -> {
+							blade.targetPos = tgt.pos;
+							owner.shoot(tgt, bolt);
+						};
+						MissileSprite ms = (MissileSprite) sprite.parent.recycle(MissileSprite.class);
+						if (tgt.sprite != null) {
+							ms.reset(sprite, tgt.sprite, bolt, onHit);
+						} else {
+							ms.reset(sprite, tgt.pos, bolt, onHit);
+						}
+					});
+				}
+				return true;
+			}
+			return super.doAction( sub, result );
 		}
 	}
 
@@ -603,3 +614,4 @@ public class DeployablewCrossBow extends HeavyBow {
 		}
 	}
 }
+

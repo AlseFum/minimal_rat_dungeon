@@ -25,6 +25,7 @@ import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -98,7 +99,7 @@ public class Goo extends Mob {
 	}
 
 	@Override
-	public boolean act() {
+	protected ActionSubmission proposeAction() {
 
 		if (state != HUNTING && pumpedUp > 0){
 			pumpedUp = 0;
@@ -134,7 +135,7 @@ public class Goo extends Mob {
 			Dungeon.level.seal();
 		}
 
-		return super.act();
+		return super.proposeAction();
 	}
 
 	@Override
@@ -180,7 +181,8 @@ public class Goo extends Mob {
 			pumpedUp++;
 			((GooSprite)sprite).pumpUp( pumpedUp );
 
-			spend( attackDelay() );
+			//only half of the attack delay - the proposal already spent the other half
+			spend( pendingAttackDelay / 2f );
 
 			return true;
 		} else if (pumpedUp >= 2 || Random.Int( (HP*2 <= HT) ? 2 : 5 ) > 0) {
@@ -199,7 +201,7 @@ public class Goo extends Mob {
 				}
 				attack( enemy );
 				Invisibility.dispel(this);
-				spend( attackDelay() );
+				spend( pendingAttackDelay / 2f );
 			}
 
 			return !visible;
@@ -209,10 +211,10 @@ public class Goo extends Mob {
 			if (Dungeon.isChallenged(Challenges.STRONGER_BOSSES)){
 				pumpedUp += 2;
 				//don't want to overly punish players with slow move or attack speed
-				spend(GameMath.gate(attackDelay(), (int)Math.ceil(enemy.cooldown()), 3*attackDelay()));
+				spend(GameMath.gate(pendingAttackDelay / 2f, (int)Math.ceil(enemy.cooldown() / 2f), 3*pendingAttackDelay/2f));
 			} else {
 				pumpedUp++;
-				spend( attackDelay() );
+				spend( pendingAttackDelay / 2f );
 			}
 
 			((GooSprite)sprite).pumpUp( pumpedUp );

@@ -22,6 +22,8 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionResult;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
@@ -117,7 +119,7 @@ public class DirectableAlly extends NPC {
 	private class Wandering extends Mob.Wandering {
 
 		@Override
-		public boolean act( boolean enemyInFOV, boolean justAlerted ) {
+		public ActionSubmission decide( boolean enemyInFOV, boolean justAlerted ) {
 			if ( enemyInFOV
 					&& attacksAutomatically
 					&& !movingToDefendPos
@@ -129,29 +131,23 @@ public class DirectableAlly extends NPC {
 				alerted = true;
 				state = HUNTING;
 				target = enemy.pos;
+				//no spend: switching to HUNTING ensures the next proposal can act
+				return ActionSubmission.idle();
 
 			} else {
 
 				enemySeen = false;
-
-				int oldPos = pos;
 				target = defendingPos != -1 ? defendingPos : Dungeon.hero.pos;
 				//always move towards the hero when wandering
-				if (getCloser( target )) {
-					spend( 1 / speed() );
-					if (pos == defendingPos) movingToDefendPos = false;
-					return moveSprite( oldPos, pos );
-				} else {
-					//if it can't move closer to defending pos, then give up and defend current position
-					if (movingToDefendPos){
-						defendingPos = pos;
-						movingToDefendPos = false;
-					}
-					spend( TICK );
+				if (target != pos){
+					//movement happens at execution, which pays the other half of the step's cost
+					return ActionSubmission.move( target );
 				}
 
+				//already guarding this position
+				spend( TICK );
+				return ActionSubmission.idle();
 			}
-			return true;
 		}
 
 	}
@@ -159,15 +155,38 @@ public class DirectableAlly extends NPC {
 	private class Hunting extends Mob.Hunting {
 
 		@Override
-		public boolean act(boolean enemyInFOV, boolean justAlerted) {
+		public ActionSubmission decide(boolean enemyInFOV, boolean justAlerted) {
 			if (enemyInFOV && defendingPos != -1 && Dungeon.level.heroFOV[defendingPos] && !canAttack(enemy)){
 				target = defendingPos;
 				state = WANDERING;
-				return true;
+				//no spend: switching to WANDERING ensures the next proposal can act
+				return ActionSubmission.idle();
 			}
-			return super.act(enemyInFOV, justAlerted);
+			return super.decide(enemyInFOV, justAlerted);
 		}
 
 	}
 
+	@Override
+	protected boolean doAction( ActionSubmission sub, ActionResult result ) {
+		if (result.isOk() && sub.name == ActionSubmission.MOVE){
+			int oldPos = pos;
+			int dst = (Integer)sub.param;
+			if (getCloser( dst )){
+				if (pos == defendingPos) movingToDefendPos = false;
+				spend( 0.5f / speed() );
+				return moveSprite( oldPos, pos );
+			}
+
+			//if it can't move closer to defending pos, then give up and defend current position
+			if (movingToDefendPos){
+				defendingPos = pos;
+				movingToDefendPos = false;
+			}
+			//complement of the proposal's half-step
+			spend( 0.5f * TICK );
+			return true;
+		}
+		return super.doAction( sub, result );
+	}
 }

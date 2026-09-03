@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Blob;
@@ -78,7 +79,7 @@ public class Shopkeeper extends NPC {
 	}
 
 	@Override
-	protected boolean act() {
+	protected ActionSubmission proposeAction() {
 
 		if (turnsSinceHarmed >= 0){
 			turnsSinceHarmed ++;
@@ -86,7 +87,7 @@ public class Shopkeeper extends NPC {
 
 		sprite.turnTo( pos, Dungeon.hero.pos );
 		spend( TICK );
-		return super.act();
+		return super.proposeAction();
 	}
 	
 	@Override

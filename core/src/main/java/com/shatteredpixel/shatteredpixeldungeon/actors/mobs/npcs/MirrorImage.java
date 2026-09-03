@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
@@ -69,14 +70,14 @@ public class MirrorImage extends NPC {
 	public int armTier;
 	
 	@Override
-	protected boolean act() {
+	protected ActionSubmission proposeAction() {
 		
 		if ( hero == null ){
 			hero = (Hero)Actor.findById(heroID);
 			if ( hero == null ){
 				die(null);
 				sprite.killAndErase();
-				return true;
+				return ActionSubmission.idle();
 			}
 		}
 		
@@ -85,7 +86,7 @@ public class MirrorImage extends NPC {
 			((MirrorSprite)sprite).updateArmor( armTier );
 		}
 		
-		return super.act();
+		return super.proposeAction();
 	}
 	
 	private static final String HEROID	= "hero_id";

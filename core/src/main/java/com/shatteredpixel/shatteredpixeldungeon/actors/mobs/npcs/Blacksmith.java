@@ -23,6 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
@@ -64,15 +65,15 @@ public class Blacksmith extends NPC {
 	}
 
 	@Override
-	protected boolean act() {
+	protected ActionSubmission proposeAction() {
 		if (Dungeon.hero.buff(AscensionChallenge.class) != null){
 			die(null);
 			Notes.remove( landmark() );
-			return true;
+			return ActionSubmission.idle();
 		} else if (!Quest.rewardsAvailable() && Quest.completed()){
 			Notes.remove( landmark() );
 		}
-		return super.act();
+		return super.proposeAction();
 	}
 	
 	@Override

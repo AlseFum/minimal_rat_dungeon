@@ -23,6 +23,8 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.rogue;
 
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionResult;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
@@ -167,14 +169,14 @@ public class ShadowClone extends ArmorAbility {
 		}
 
 		@Override
-		protected boolean act() {
+		protected boolean doAction( ActionSubmission sub, ActionResult result ) {
 			int oldPos = pos;
-			boolean result = super.act();
+			boolean r = super.doAction( sub, result );
 			//partially simulates how the hero switches to idle animation
 			if ((pos == target || oldPos == pos) && sprite.looping()){
 				sprite.idle();
 			}
-			return result;
+			return r;
 		}
 
 		@Override

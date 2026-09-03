@@ -24,6 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.Ratmogrify;
@@ -92,7 +93,7 @@ public class RatKing extends NPC {
 	}
 
 	@Override
-	protected boolean act() {
+	protected ActionSubmission proposeAction() {
 		if (Dungeon.depth < 5){
 			if (pos == Dungeon.level.exit()){
 				destroy();
@@ -108,7 +109,7 @@ public class RatKing extends NPC {
 				target = Dungeon.level.entrance();
 			}
 		}
-		return super.act();
+		return super.proposeAction();
 	}
 
 	//***

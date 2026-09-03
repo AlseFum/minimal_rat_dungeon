@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
@@ -273,7 +274,7 @@ public class Rat extends Mob {
 	}
 
 	@Override
-	protected boolean act() {
+	protected ActionSubmission proposeAction() {
 		if (reviveTurns > 0) {
 			reviveTurns--;
 			if (reviveTurns == 0) {
@@ -281,7 +282,7 @@ public class Rat extends Mob {
 				state = WANDERING;
 			}
 			spend(TICK);
-			return true;
+			return ActionSubmission.idle();
 		}
 
 		if (specialCooldown > 0) specialCooldown--;
@@ -319,7 +320,7 @@ public class Rat extends Mob {
 			if (enemy == Dungeon.hero) enemy = null;
 			if (state == SLEEPING) state = WANDERING;
 		}
-		return super.act();
+		return super.proposeAction();
 	}
 
 	@Override
@@ -396,7 +397,8 @@ public class Rat extends Mob {
 			charging = true;
 			chargeTarget = enemy.pos;
 			sprite.showStatus(CharSprite.WARNING, "!");
-			spend(attackDelay());
+			//only half of the attack delay - the proposal already spent the other half
+			spend(pendingAttackDelay / 2f);
 			return true;
 		}
 		if (charging && chargeTarget != enemy.pos) {
@@ -408,7 +410,8 @@ public class Rat extends Mob {
 		charging = false;
 		chargeTarget = -1;
 		Invisibility.dispel(this);
-		spend(attackDelay());
+		//only half of the attack delay - the proposal already spent the other half
+		spend(pendingAttackDelay / 2f);
 
 		if (variant == Variant.GAS_TURRET) {
 			GameScene.add(Blob.seed(enemy.pos, 18, ToxicGas.class));

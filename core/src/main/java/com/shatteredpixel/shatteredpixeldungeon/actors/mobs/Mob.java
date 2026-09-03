@@ -26,8 +26,11 @@ import com.shatteredpixel.shatteredpixeldungeon.Badges;
 import com.shatteredpixel.shatteredpixeldungeon.Challenges;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionResult;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.FailCause;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Adrenaline;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AllyBuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Amok;
@@ -122,6 +125,17 @@ public abstract class Mob extends Char {
 	protected Char enemy;
 	protected int enemyID = -1; //used for save/restore
 	protected boolean enemySeen;
+
+	//updated each proposal, used by execution-time failure handling
+	protected boolean enemyInFOV = false;
+
+	//prevents rare infinite retarget loops - only one automatic retarget per turn
+	protected boolean failedMove = false;
+
+	//cache of the attack delay for the attack currently being attempted.
+	//computed once at proposal time, shared by the proposal and completion halves of the cost.
+	protected float pendingAttackDelay = 1f;
+
 	protected boolean alerted = false;
 
 	protected static final float TIME_TO_WAKE_UP = 1f;
@@ -209,13 +223,15 @@ public abstract class Mob extends Char {
 	}
 	
 	@Override
-	protected boolean act() {
-		
-		super.act();
-		
+	protected ActionSubmission proposeAction() {
+
+		updateFovAndThrowItems();
+
+		failedMove = false;
+
 		boolean justAlerted = alerted;
 		alerted = false;
-		
+
 		if (justAlerted){
 			sprite.showAlert();
 		} else {
@@ -223,29 +239,38 @@ public abstract class Mob extends Char {
 			sprite.hideLost();
 			sprite.hideInvestigate();
 		}
-		
+
 		if (paralysed > 0) {
 			enemySeen = false;
 			spend( TICK );
-			return true;
+			return ActionSubmission.idle();
 		}
 
 		if (buff(Terror.class) != null || buff(Dread.class) != null ){
 			state = FLEEING;
 		}
-		
+
 		enemy = chooseEnemy();
-		
-		boolean enemyInFOV = enemy != null && enemy.isAlive() && fieldOfView[enemy.pos] && enemy.invisible <= 0;
+
+		enemyInFOV = enemy != null && enemy.isAlive() && fieldOfView[enemy.pos] && enemy.invisible <= 0;
 
 		//prevents action, but still updates enemy seen status
 		if (buff(Feint.AfterImage.FeintConfusion.class) != null){
 			enemySeen = enemyInFOV;
 			spend( TICK );
-			return true;
+			return ActionSubmission.idle();
 		}
 
-		boolean result = state.act( enemyInFOV, justAlerted );
+		ActionSubmission sub = state.decide( enemyInFOV, justAlerted );
+
+		//the proposal pays half of an action's cost; execution pays the other half.
+		//waits (IDLE) pay their whole cost inside decide instead.
+		if (sub.name == ActionSubmission.MOVE){
+			spend( 0.5f / speed() );
+		} else if (sub.name == ActionSubmission.ATTACK){
+			pendingAttackDelay = attackDelay();
+			spend( pendingAttackDelay / 2f );
+		}
 
 		//for updating hero FOV
 		if (buff(PowerOfMany.PowerBuff.class) != null){
@@ -253,7 +278,100 @@ public abstract class Mob extends Char {
 			GameScene.updateFog(pos, viewDistance+(int)Math.ceil(speed()));
 		}
 
-		return result;
+		return sub;
+	}
+
+	@Override
+	protected ActionResult adjudicate( ActionSubmission sub ) {
+		if (sub.name == ActionSubmission.MOVE) {
+
+			//execution re-checks this too, this is a cheap early gate
+			if (paralysed > 0)   return ActionResult.fail( FailCause.PARALYSED );
+			if (rooted)          return ActionResult.fail( FailCause.ROOTED );
+			Integer dst = (Integer)sub.param;
+			if (dst == null || !Dungeon.level.insideMap( dst )){
+				return ActionResult.fail( FailCause.OUT_OF_MAP );
+			}
+			if (dst == pos){
+				return ActionResult.fail( FailCause.NOT_PASSABLE );
+			}
+			if (Dungeon.level.adjacent( pos, dst ) && !cellIsPathable( dst )){
+				return ActionResult.fail( FailCause.NOT_PASSABLE );
+			}
+
+		} else if (sub.name == ActionSubmission.ATTACK) {
+
+			Char target = (Char)sub.param;
+			if (target == null || !target.isAlive() || !Actor.chars().contains( target )){
+				return ActionResult.fail( FailCause.TARGET_GONE );
+			}
+			if (!canAttack( target )){
+				return ActionResult.fail( FailCause.TARGET_OUT_OF_RANGE );
+			}
+
+		}
+		return ActionResult.OK; //IDLE and unknown names pass through
+	}
+
+	@Override
+	protected boolean doAction( ActionSubmission sub, ActionResult result ) {
+
+		if (sub.name == ActionSubmission.MOVE && result.isOk()) {
+
+			int oldPos = pos;
+			int dst = (Integer)sub.param;
+
+			//the other half of the step's cost is spent here
+			boolean moved = state == FLEEING ? getFurther( dst ) : getCloser( dst );
+			if (moved){
+				spend( 0.5f / speed() );
+				return moveSprite( oldPos, pos );
+			}
+
+			return failMove();
+
+		} else if (sub.name == ActionSubmission.ATTACK && result.isOk()) {
+
+			//dispatches through doAttack so subclass special attacks are preserved.
+			//visible attacks defer to onAttackComplete, which spends the other half of the cost.
+			return doAttack( (Char)sub.param );
+
+		} else if (sub.name == ActionSubmission.ATTACK || sub.name == ActionSubmission.MOVE) {
+
+			//adjudicated failures: retarget or wait (failure already cost the proposal's half)
+			return failMove();
+
+		}
+
+		return true; //IDLE (all waits paid in decide) and unknown names
+	}
+
+	//called when a movement step can't be made. tries a different target once
+	//(matching the old recursion in Hunting), otherwise waits out the rest of the turn.
+	protected boolean failMove(){
+		if (!failedMove){
+			failedMove = true;
+			Char oldEnemy = enemy;
+			enemy = null;
+			enemy = chooseEnemy();
+			if (enemy != null && enemy != oldEnemy){
+				//retargeted - re-propose at the same time, as nothing was spent
+				return true;
+			}
+		}
+
+		//complement of the proposal's half-step: speed-1 mobs wait a full turn like before
+		spend( 0.5f * TICK );
+		if (state == WANDERING || state == INVESTIGATING){
+			target = ((Mob.Wandering)WANDERING).randomDestination();
+		} else if (state == FLEEING){
+			nowhereToRun();
+		} else if (!enemyInFOV){
+			sprite.showLost();
+			state = WANDERING;
+			target = ((Mob.Wandering)WANDERING).randomDestination();
+		}
+		return true;
 	}
 	
 	//FIXME this is sort of a band-aid correction for allies needing more intelligent behaviour
@@ -646,24 +764,25 @@ public abstract class Mob extends Char {
 	}
 	
 	protected boolean doAttack( Char enemy ) {
-		
+
 		if (sprite != null && (sprite.visible || enemy.sprite.visible)) {
 			sprite.attack( enemy.pos );
 			return false;
-			
+
 		} else {
 			attack( enemy );
 			Invisibility.dispel(this);
-			spend( attackDelay() );
+			spend( pendingAttackDelay / 2f );
 			return true;
 		}
 	}
-	
+
 	@Override
 	public void onAttackComplete() {
 		attack( enemy );
 		Invisibility.dispel(this);
-		spend( attackDelay() );
+		//only half of the attack delay - the proposal already spent the other half
+		spend( pendingAttackDelay / 2f );
 		super.onAttackComplete();
 	}
 	
@@ -1025,7 +1144,7 @@ public abstract class Mob extends Char {
 	}
 
 	public interface AiState {
-		boolean act( boolean enemyInFOV, boolean justAlerted );
+		ActionSubmission decide( boolean enemyInFOV, boolean justAlerted );
 	}
 
 	protected class Sleeping implements AiState {
@@ -1033,7 +1152,7 @@ public abstract class Mob extends Char {
 		public static final String TAG	= "SLEEPING";
 
 		@Override
-		public boolean act( boolean enemyInFOV, boolean justAlerted ) {
+		public ActionSubmission decide( boolean enemyInFOV, boolean justAlerted ) {
 
 			//debuffs cause mobs to wake as well
 			for (Buff b : buffs()){
@@ -1042,7 +1161,7 @@ public abstract class Mob extends Char {
 					if (state == SLEEPING){
 						spend(TICK); //wait if we can't wake up for some reason
 					}
-					return true;
+					return ActionSubmission.idle();
 				}
 			}
 
@@ -1078,7 +1197,7 @@ public abstract class Mob extends Char {
 					if (state == SLEEPING){
 						spend(TICK); //wait if we can't wake up for some reason
 					}
-					return true;
+					return ActionSubmission.idle();
 				}
 
 			}
@@ -1086,7 +1205,7 @@ public abstract class Mob extends Char {
 			enemySeen = false;
 			spend( TICK );
 
-			return true;
+			return ActionSubmission.idle();
 		}
 
 		//chance is 1 in (distance + stealth)
@@ -1124,7 +1243,7 @@ public abstract class Mob extends Char {
 		public static final String TAG	= "WANDERING";
 
 		@Override
-		public boolean act( boolean enemyInFOV, boolean justAlerted ) {
+		public ActionSubmission decide( boolean enemyInFOV, boolean justAlerted ) {
 			if (enemyInFOV && (justAlerted || Random.Float() < detectionChance(enemy))) {
 
 				return noticeEnemy();
@@ -1141,7 +1260,7 @@ public abstract class Mob extends Char {
 			return 1 / (distance( enemy ) / 2f + enemy.stealth());
 		}
 
-		protected boolean noticeEnemy(){
+		protected ActionSubmission noticeEnemy(){
 			enemySeen = true;
 			
 			notice();
@@ -1159,22 +1278,20 @@ public abstract class Mob extends Char {
 				}
 			}
 			
-			return true;
+			//no spend: switching to HUNTING ensures the next proposal can act
+			return ActionSubmission.idle();
 		}
 		
-		protected boolean continueWandering(){
+		protected ActionSubmission continueWandering(){
 			enemySeen = false;
-			
-			int oldPos = pos;
-			if (target != -1 && getCloser( target )) {
-				spend( 1 / speed() );
-				return moveSprite( oldPos, pos );
+			if (target != -1){
+				//movement happens at execution, which pays the other half of the step's cost
+				return ActionSubmission.move( target );
 			} else {
 				target = randomDestination();
 				spend( TICK );
+				return ActionSubmission.idle();
 			}
-			
-			return true;
 		}
 
 		protected int randomDestination(){
@@ -1191,20 +1308,20 @@ public abstract class Mob extends Char {
 		public static final String TAG	= "HUNTING";
 
 		@Override
-		public boolean act( boolean enemyInFOV, boolean justAlerted ) {
+		public ActionSubmission decide( boolean enemyInFOV, boolean justAlerted ) {
 			enemySeen = enemyInFOV;
 			if (enemyInFOV && !isCharmedBy( enemy ) && canAttack( enemy )) {
 
 				recentlyAttackedBy.clear();
 				target = enemy.pos;
-				return doAttack( enemy );
+				return ActionSubmission.attack( enemy );
 
 			} else {
 
 				//if we cannot attack our target, but were hit by something else that
 				// is visible and attackable or closer, swap targets
 				if (handleRecentAttackers()){
-					return act( true, justAlerted );
+					return decide( true, justAlerted );
 				}
 
 				if (enemyInFOV) {
@@ -1214,19 +1331,15 @@ public abstract class Mob extends Char {
 					state = WANDERING;
 					target = ((Mob.Wandering)WANDERING).randomDestination();
 					spend( TICK );
-					return true;
+					return ActionSubmission.idle();
 				}
-				
-				int oldPos = pos;
-				if (target != -1 && getCloser( target )) {
-					
-					spend( 1 / speed() );
-					return moveSprite( oldPos,  pos );
-
-				} else {
-
-					return handleUnreachableTarget(enemyInFOV, justAlerted);
+				if (target != -1){
+					return ActionSubmission.move( target );
 				}
+
+				//no destination to move toward
+				spend( TICK );
+				return ActionSubmission.idle();
 			}
 		}
 
@@ -1246,34 +1359,9 @@ public abstract class Mob extends Char {
 			}
 			return swapped;
 		}
-
-		//prevents rare infinite loop cases
-		protected boolean recursing = false;
-
-		//Try to switch targets to another enemy that is closer or reachable
-		//unless we have already done that and still can't move toward them, then move on.
-		protected boolean handleUnreachableTarget(boolean enemyInFOV, boolean justAlerted){
-			if (!recursing) {
-				Char oldEnemy = enemy;
-				enemy = null;
-				enemy = chooseEnemy();
-				if (enemy != null && enemy != oldEnemy) {
-					recursing = true;
-					boolean result = act(enemyInFOV, justAlerted);
-					recursing = false;
-					return result;
-				}
-			}
-
-			spend( TICK );
-			if (!enemyInFOV) {
-				sprite.showLost();
-				state = WANDERING;
-				target = ((Mob.Wandering)WANDERING).randomDestination();
-			}
-			return true;
-		}
 	}
+
+
 
 	//essentially a more aggressive version of wandering, where target pos is updated like hunting
 	//not currently used directly by mobs outside of the vault, which also add more behaviour here
@@ -1282,7 +1370,7 @@ public abstract class Mob extends Char {
 		public static final String TAG	= "INVESTIGATING";
 
 		@Override
-		public boolean act(boolean enemyInFOV, boolean justAlerted) {
+		public ActionSubmission decide(boolean enemyInFOV, boolean justAlerted) {
 			if (enemyInFOV){
 				target = enemy.pos;
 			} else {
@@ -1292,10 +1380,10 @@ public abstract class Mob extends Char {
 					state = WANDERING;
 					target = ((Mob.Wandering)WANDERING).randomDestination();
 					spend( TICK );
-					return true;
+					return ActionSubmission.idle();
 				}
 			}
-			return super.act(enemyInFOV, justAlerted);
+			return super.decide(enemyInFOV, justAlerted);
 		}
 
 		//same detection chance as wandering
@@ -1307,49 +1395,42 @@ public abstract class Mob extends Char {
 		public static final String TAG	= "FLEEING";
 
 		@Override
-		public boolean act( boolean enemyInFOV, boolean justAlerted ) {
+		public ActionSubmission decide( boolean enemyInFOV, boolean justAlerted ) {
 			enemySeen = enemyInFOV;
 			//triggers escape logic when 0-dist rolls a 6 or greater.
 			if (enemy == null || !enemyInFOV && 1 + Random.Int(Dungeon.level.distance(pos, target)) >= 6){
 				escaped();
 				if (state != FLEEING){
 					spend( TICK );
-					return true;
+					return ActionSubmission.idle();
 				}
 			
 			//if enemy isn't in FOV, keep running from their previous position.
 			} else if (enemyInFOV) {
 				target = enemy.pos;
 			}
-
-			int oldPos = pos;
-			if (target != -1 && getFurther( target )) {
-
-				spend( 1 / speed() );
-				return moveSprite( oldPos, pos );
-
-			} else {
-
-				spend( TICK );
-				nowhereToRun();
-
-				return true;
+			if (target != -1){
+				return ActionSubmission.move( target );
 			}
+
+			spend( TICK );
+			nowhereToRun();
+			return ActionSubmission.idle();
 		}
 
 		protected void escaped(){
 			//does nothing by default, some enemies have special logic for this
 		}
+	}
 
-		//enemies will turn and fight if they have nowhere to run and aren't affect by terror
-		protected void nowhereToRun() {
-			if (buff( Terror.class ) == null && buff( Dread.class ) == null) {
-				if (enemySeen) {
-					sprite.showStatus(CharSprite.WARNING, Messages.get(Mob.class, "rage"));
-					state = HUNTING;
-				} else {
-					state = WANDERING;
-				}
+	//enemies will turn and fight if they have nowhere to run and aren't affect by terror
+	protected void nowhereToRun() {
+		if (buff( Terror.class ) == null && buff( Dread.class ) == null) {
+			if (enemySeen) {
+				sprite.showStatus(CharSprite.WARNING, Messages.get(Mob.class, "rage"));
+				state = HUNTING;
+			} else {
+				state = WANDERING;
 			}
 		}
 	}
@@ -1359,10 +1440,10 @@ public abstract class Mob extends Char {
 		public static final String TAG	= "PASSIVE";
 
 		@Override
-		public boolean act( boolean enemyInFOV, boolean justAlerted ) {
+		public ActionSubmission decide( boolean enemyInFOV, boolean justAlerted ) {
 			enemySeen = enemyInFOV;
 			spend( TICK );
-			return true;
+			return ActionSubmission.idle();
 		}
 	}
 	

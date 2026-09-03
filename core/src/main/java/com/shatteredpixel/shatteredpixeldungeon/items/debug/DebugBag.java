@@ -14,6 +14,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.debug;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugFrostAura;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugNextFloor;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugMapDevice;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugArrowDevice;
@@ -55,6 +56,7 @@ public class DebugBag extends Bag {
 			new DebugHeatPumpChannel().collect();
 			new DebugIceCrystalAltar().collect();
 			new DebugOriginiumAltar().collect();
+			new DebugFrostAura().collect();
 			new DebugWeaponBox().collect();
 			new DebugTalentLayers().collect();
 			new DebugTier().collect();

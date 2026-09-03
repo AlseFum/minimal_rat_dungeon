@@ -22,6 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Bestiary;
 
@@ -35,12 +36,12 @@ public abstract class NPC extends Mob {
 	}
 
 	@Override
-	protected boolean act() {
+	protected ActionSubmission proposeAction() {
 		if (Dungeon.level.heroFOV[pos]){
 			Bestiary.setSeen(getClass());
 		}
 
-		return super.act();
+		return super.proposeAction();
 	}
 
 	@Override

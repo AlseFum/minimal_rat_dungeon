@@ -130,6 +130,32 @@ abstract public class Weapon extends KindOfWeapon {
 	public boolean curseInfusionBonus = false;
 	public boolean masteryPotionBonus = false;
 	
+	/**
+	 * Whether this weapon takes over the given enchantment, suppressing its normal proc.
+	 * Subclass weapons can override this to claim specific enchantments (by class,
+	 * attacker, defender, etc.) and run their own behaviour instead.
+	 */
+	protected boolean overridesEnchantment( Enchantment enchantment, Char attacker, Char defender ){
+		return false;
+	}
+
+	/**
+	 * The weapon's own behaviour when it takes over an enchantment
+	 * (i.e. when {@link #overridesEnchantment} returns true). Runs instead of
+	 * the enchantment's own proc. Default: no additional effect.
+	 */
+	protected int overridesEnchantmentProc( Enchantment enchantment, Char attacker, Char defender, int damage ){
+		return damage;
+	}
+
+	//routes an enchantment's proc through the weapon's override hooks when claimed
+	private int dispatchEnchant( Enchantment enchantment, Char attacker, Char defender, int damage ){
+		if (overridesEnchantment( enchantment, attacker, defender )){
+			return overridesEnchantmentProc( enchantment, attacker, defender, damage );
+		}
+		return enchantment.proc( this, attacker, defender, damage );
+	}
+
 	@Override
 	public int proc( Char attacker, Char defender, int damage ) {
 
@@ -150,7 +176,7 @@ abstract public class Weapon extends KindOfWeapon {
 					&& attacker.buff(HolyWeapon.HolyWepBuff.class) != null){
 				if (enchantment != null &&
 						(((Hero) attacker).subClass == HeroSubClass.PALADIN || hasCurseEnchant())){
-					damage = enchantment.proc(this, attacker, defender, damage);
+					damage = dispatchEnchant(enchantment, attacker, defender, damage);
 					if (defender.alignment == Char.Alignment.ALLY && !wasAlly){
 						becameAlly = true;
 					}
@@ -168,7 +194,7 @@ abstract public class Weapon extends KindOfWeapon {
 
 			} else {
 				if (enchantment != null) {
-					damage = enchantment.proc(this, attacker, defender, damage);
+					damage = dispatchEnchant(enchantment, attacker, defender, damage);
 					if (defender.alignment == Char.Alignment.ALLY && !wasAlly) {
 						becameAlly = true;
 					}

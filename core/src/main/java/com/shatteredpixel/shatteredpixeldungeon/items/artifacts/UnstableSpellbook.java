@@ -31,7 +31,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ElmoParticle;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
@@ -88,8 +88,8 @@ public class UnstableSpellbook extends Artifact {
 	private void setupScrolls(){
 		scrolls.clear();
 
-		Class<?>[] scrollClasses = Generator.Category.SCROLL.classes;
-		float[] probs = Generator.Category.SCROLL.defaultProbsTotal.clone(); //array of primitives, clone gives deep copy.
+		Class<?>[] scrollClasses = Loot.classes(Loot.SCROLL);
+		float[] probs = Loot.defaultProbsTotal(Loot.SCROLL).clone(); //array of primitives, clone gives deep copy.
 		int i = Random.chances(probs);
 
 		while (i != -1){
@@ -140,7 +140,7 @@ public class UnstableSpellbook extends Artifact {
 
 		Scroll scroll;
 		do {
-			scroll = (Scroll) Generator.randomUsingDefaults(Generator.Category.SCROLL);
+			scroll = (Scroll) Loot.randomUsingDefaults(Loot.SCROLL);
 		} while (scroll == null
 				//reduce the frequency of these scrolls by half
 				||((scroll instanceof ScrollOfIdentify ||

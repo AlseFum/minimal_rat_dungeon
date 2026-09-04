@@ -29,7 +29,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Rat;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Blacksmith;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.Torch;
@@ -202,7 +202,7 @@ public class MiningLevel extends RegularLevel {
 			map[cell] = Terrain.GRASS;
 			losBlocking[cell] = false;
 		}
-		drop( Generator.randomUsingDefaults(Generator.Category.FOOD), cell );
+		drop( Loot.randomUsingDefaults(Loot.FOOD), cell );
 		if (Blacksmith.Quest.Type() == Blacksmith.Quest.GNOLL){
 			//drop a second ration for the gnoll quest type, more mining required!
 			cell = randomDropCell();
@@ -210,7 +210,7 @@ public class MiningLevel extends RegularLevel {
 				map[cell] = Terrain.GRASS;
 				losBlocking[cell] = false;
 			}
-			drop( Generator.randomUsingDefaults(Generator.Category.FOOD), cell );
+			drop( Loot.randomUsingDefaults(Loot.FOOD), cell );
 		}
 
 		if (Dungeon.isChallenged(Challenges.DARKNESS)){

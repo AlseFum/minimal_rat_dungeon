@@ -54,7 +54,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 /**
- * The single, floor-independent item drop registry used by {@link Generator#random()}.
+ * The single, floor-independent item drop registry used by {@link Loot#random()}.
  *
  * <p>This list is deliberately explicit. It gives every independently usable gameplay
  * item one equally weighted factory, makes deletions fail visibly at compile time, avoids

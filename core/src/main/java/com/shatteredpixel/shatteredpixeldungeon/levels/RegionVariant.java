@@ -170,8 +170,8 @@ public abstract class RegionVariant {
 
 		@Override
 		public void modifySize(Level level) {
-			level.addItemToSpawn(com.shatteredpixel.shatteredpixeldungeon.items.Generator.random(
-					com.shatteredpixel.shatteredpixeldungeon.items.Generator.Category.FOOD));
+			level.addItemToSpawn(com.shatteredpixel.shatteredpixeldungeon.items.Loot.random(
+					com.shatteredpixel.shatteredpixeldungeon.items.Loot.FOOD));
 		}
 	}
 

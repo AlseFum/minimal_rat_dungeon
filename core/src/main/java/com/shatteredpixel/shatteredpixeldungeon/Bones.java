@@ -23,7 +23,7 @@ package com.shatteredpixel.shatteredpixeldungeon;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Gold;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact;
@@ -202,7 +202,7 @@ public class Bones {
 
 				//Enforces artifact uniqueness
 				if (item instanceof Artifact){
-					if (Generator.removeArtifact(((Artifact)item).getClass())) {
+					if (Loot.removeArtifact(((Artifact)item).getClass())) {
 						
 						//generates a new artifact of the same type, always +0
 						Artifact artifact = Reflection.newInstance(((Artifact)item).getClass());

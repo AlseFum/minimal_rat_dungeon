@@ -51,7 +51,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Electricity;
 import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.Fire;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Lightning;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ShadowParticle;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TalismanOfForesight;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
@@ -476,7 +476,7 @@ public class TippedDart extends Dart {
 	public static TippedDart randomTipped(int quantity) {
 		Plant.Seed seed;
 		do {
-			seed = (Plant.Seed) Generator.randomUsingDefaults(Generator.Category.SEED);
+			seed = (Plant.Seed) Loot.randomUsingDefaults(Loot.SEED);
 		} while (!types.containsKey(seed.getClass()));
 		return getTipped(seed, quantity);
 	}

@@ -24,7 +24,7 @@ package com.shatteredpixel.shatteredpixeldungeon.ui;
 import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.items.EquipableItem;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
@@ -211,13 +211,13 @@ public class CustomNoteButton extends IconButton {
 			int left = 0;
 
 			ArrayList<Item> items = new ArrayList<>();
-			for (Class<?> potionCls : Generator.Category.POTION.classes) {
+			for (Class<?> potionCls : Loot.classes(Loot.POTION)) {
 				items.add((Item) Reflection.newInstance(potionCls));
 			}
-			for (Class<?> potionCls : Generator.Category.SCROLL.classes) {
+			for (Class<?> potionCls : Loot.classes(Loot.SCROLL)) {
 				items.add((Item) Reflection.newInstance(potionCls));
 			}
-			for (Class<?> potionCls : Generator.Category.RING.classes) {
+			for (Class<?> potionCls : Loot.classes(Loot.RING)) {
 				items.add((Item) Reflection.newInstance(potionCls));
 			}
 			Collections.sort(items, itemVisualcomparator);

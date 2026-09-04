@@ -22,7 +22,7 @@
 package com.shatteredpixel.shatteredpixeldungeon.levels.rooms.special;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
@@ -134,12 +134,12 @@ public class TrapsRoom extends SpecialRoom {
 		
 		//1 floor set higher in probability, never cursed
 		if (Random.Int(2) == 0) {
-			prize = Generator.randomWeapon((Dungeon.depth / 5) + 1);
+			prize = Loot.randomWeapon((Dungeon.depth / 5) + 1);
 			if (((Weapon)prize).hasCurseEnchant()){
 				((Weapon) prize).enchant(null);
 			}
 		} else {
-			prize = Generator.randomArmor((Dungeon.depth / 5) + 1);
+			prize = Loot.randomArmor((Dungeon.depth / 5) + 1);
 			if (((Armor)prize).hasCurseGlyph()){
 				((Armor) prize).inscribe(null);
 			}

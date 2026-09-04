@@ -32,7 +32,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Blacksmith;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.Torch;
@@ -365,7 +365,7 @@ public abstract class RegularLevel extends Level {
 		
 		for (int i=0; i < nItems; i++) {
 
-			Item toDrop = Generator.random();
+			Item toDrop = Loot.random();
 			if (toDrop == null) continue;
 
 			int cell = randomDropCell();
@@ -515,7 +515,7 @@ public abstract class RegularLevel extends Level {
 					map[cell] = Terrain.GRASS;
 					losBlocking[cell] = false;
 				}
-				drop( Generator.randomUsingDefaults(), cell).hidden = true;
+				drop( Loot.randomUsingDefaults(), cell).hidden = true;
 			}
 		Random.popGenerator();
 

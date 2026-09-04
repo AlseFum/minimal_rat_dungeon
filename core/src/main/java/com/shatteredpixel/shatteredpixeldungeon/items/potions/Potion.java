@@ -33,7 +33,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Ooze;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Splash;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.ItemStatusHandler;
 import com.shatteredpixel.shatteredpixeldungeon.items.Recipe;
@@ -120,7 +120,7 @@ public class Potion extends Item {
 	
 	@SuppressWarnings("unchecked")
 	public static void initColors() {
-		handler = new ItemStatusHandler<>( (Class<? extends Potion>[])Generator.Category.POTION.classes, colors );
+		handler = new ItemStatusHandler<>( (Class<? extends Potion>[])Loot.classes(Loot.POTION), colors );
 	}
 
 	public static void clearColors() {
@@ -145,7 +145,7 @@ public class Potion extends Item {
 	
 	@SuppressWarnings("unchecked")
 	public static void restore( Bundle bundle ) {
-		handler = new ItemStatusHandler<>( (Class<? extends Potion>[])Generator.Category.POTION.classes, colors, bundle );
+		handler = new ItemStatusHandler<>( (Class<? extends Potion>[])Loot.classes(Loot.POTION), colors, bundle );
 	}
 	
 	public Potion() {
@@ -373,7 +373,7 @@ public class Potion extends Item {
 	}
 	
 	public static boolean allKnown() {
-		return handler != null && handler.known().size() == Generator.Category.POTION.classes.length;
+		return handler != null && handler.known().size() == Loot.classes(Loot.POTION).length;
 	}
 	
 	protected int splashColor(){
@@ -488,7 +488,7 @@ public class Potion extends Item {
 			if ( (seeds.size() == 2 && Random.Int(4) == 0)
 					|| (seeds.size() == 3 && Random.Int(2) == 0)) {
 				
-				result = (Potion) Generator.randomUsingDefaults( Generator.Category.POTION );
+				result = (Potion) Loot.randomUsingDefaults( Loot.POTION );
 				
 			} else {
 				result = Reflection.newInstance(types.get(Random.element(ingredients).getClass()));
@@ -502,7 +502,7 @@ public class Potion extends Item {
 			while (result instanceof PotionOfHealing
 					&& Random.Int(10) < Dungeon.LimitedDrops.COOKING_HP.count) {
 
-				result = (Potion) Generator.randomUsingDefaults(Generator.Category.POTION);
+				result = (Potion) Loot.randomUsingDefaults(Loot.POTION);
 			}
 			
 			if (result instanceof PotionOfHealing) {

@@ -70,7 +70,7 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.particles.FlameParticle;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.PoisonParticle;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ShadowParticle;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.SparkParticle;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.bombs.Bomb;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfMirrorImage;
@@ -354,7 +354,7 @@ public class CursedWand {
 		@Override
 		public void FX(Item origin, Char user, Ballistica bolt, Callback callback) {
 			if (wand == null){
-				wand = (Wand)Generator.randomUsingDefaults(Generator.Category.WAND);
+				wand = (Wand)Loot.randomUsingDefaults(Loot.WAND);
 			}
 			wand.fx(bolt, callback);
 		}
@@ -362,7 +362,7 @@ public class CursedWand {
 		@Override
 		public boolean effect(Item origin, Char user, Ballistica bolt, boolean positiveOnly) {
 			if (wand == null){
-				wand = (Wand)Generator.randomUsingDefaults(Generator.Category.WAND);
+				wand = (Wand)Loot.randomUsingDefaults(Loot.WAND);
 			}
 			if (origin instanceof Wand){
 				wand.upgrade(origin.level());
@@ -448,7 +448,7 @@ public class CursedWand {
 		public boolean effect(Item origin, Char user, Ballistica bolt, boolean positiveOnly) {
 			if (valid(origin, user, bolt, positiveOnly)) {
 				tryForWandProc(Actor.findChar(bolt.collisionPos), origin);
-				Dungeon.level.plant((Plant.Seed) Generator.randomUsingDefaults(Generator.Category.SEED), bolt.collisionPos);
+				Dungeon.level.plant((Plant.Seed) Loot.randomUsingDefaults(Loot.SEED), bolt.collisionPos);
 				return true;
 			} else {
 				return false;
@@ -1055,8 +1055,8 @@ public class CursedWand {
 			} else {
 				Item reward;
 				do {
-					reward = Generator.randomUsingDefaults(Random.oneOf(Generator.Category.WEAPON, Generator.Category.ARMOR,
-							Generator.Category.RING, Generator.Category.WAND));
+					reward = Loot.randomUsingDefaults(Random.oneOf(Loot.WEAPON, Loot.ARMOR,
+							Loot.RING, Loot.WAND));
 				} while (reward.level() < 1);
 				Dungeon.level.drop(reward, spawnCell).sprite.drop();
 			}
@@ -1137,8 +1137,8 @@ public class CursedWand {
 			origin.detach(Dungeon.hero.belongings.backpack);
 			Item result;
 			do {
-				result = Generator.randomUsingDefaults(Random.oneOf(Generator.Category.WEAPON, Generator.Category.ARMOR,
-						Generator.Category.RING, Generator.Category.ARTIFACT));
+				result = Loot.randomUsingDefaults(Random.oneOf(Loot.WEAPON, Loot.ARMOR,
+						Loot.RING, Loot.ARTIFACT));
 			} while (result.cursed);
 			if (result.isUpgradable()) result.upgrade();
 			result.cursed = result.cursedKnown = true;

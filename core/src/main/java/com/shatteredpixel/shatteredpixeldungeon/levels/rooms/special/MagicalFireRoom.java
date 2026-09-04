@@ -31,7 +31,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning;
 import com.shatteredpixel.shatteredpixeldungeon.effects.BlobEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.ElmoParticle;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Honeypot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfFrost;
@@ -119,11 +119,11 @@ public class MagicalFireRoom extends SpecialRoom {
 				return prize;
 		}
 
-		return Generator.random( Random.oneOf(
-				Generator.Category.POTION,
-				Generator.Category.SCROLL,
-				Generator.Category.FOOD,
-				Generator.Category.GOLD
+		return Loot.random( Random.oneOf(
+				Loot.POTION,
+				Loot.SCROLL,
+				Loot.FOOD,
+				Loot.GOLD
 		) );
 	}
 

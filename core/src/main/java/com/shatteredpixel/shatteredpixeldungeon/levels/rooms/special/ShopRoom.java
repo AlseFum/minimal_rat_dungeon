@@ -26,7 +26,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ShatteredPixelDungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.Shopkeeper;
 import com.shatteredpixel.shatteredpixeldungeon.items.Ankh;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Heap;
 import com.shatteredpixel.shatteredpixeldungeon.items.Honeypot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
@@ -213,8 +213,8 @@ public class ShopRoom extends SpecialRoom {
 
 		ArrayList<Item> itemsToSpawn = new ArrayList<>();
 
-		MeleeWeapon w = Generator.randomWeapon();
-		MissileWeapon m = Generator.randomMissile();
+		MeleeWeapon w = Loot.randomWeapon();
+		MissileWeapon m = Loot.randomMissile();
 		itemsToSpawn.add( new Armor().identify(false) );
 		w.enchant(null);
 		w.cursed = false;
@@ -233,8 +233,8 @@ public class ShopRoom extends SpecialRoom {
 		itemsToSpawn.add( new Alchemize().quantity(Random.IntRange(2, 3)));
 
 		itemsToSpawn.add( new PotionOfHealing() );
-		itemsToSpawn.add( Generator.randomUsingDefaults( Generator.Category.POTION ) );
-		itemsToSpawn.add( Generator.randomUsingDefaults( Generator.Category.POTION ) );
+		itemsToSpawn.add( Loot.randomUsingDefaults( Loot.POTION ) );
+		itemsToSpawn.add( Loot.randomUsingDefaults( Loot.POTION ) );
 
 		itemsToSpawn.add( new ScrollOfIdentify() );
 		itemsToSpawn.add( new ScrollOfRemoveCurse() );
@@ -242,8 +242,8 @@ public class ShopRoom extends SpecialRoom {
 
 		for (int i=0; i < 2; i++)
 			itemsToSpawn.add( Random.Int(2) == 0 ?
-					Generator.randomUsingDefaults( Generator.Category.POTION ) :
-					Generator.randomUsingDefaults( Generator.Category.SCROLL ) );
+					Loot.randomUsingDefaults( Loot.POTION ) :
+					Loot.randomUsingDefaults( Loot.SCROLL ) );
 
 
 		itemsToSpawn.add( new Food() );
@@ -289,15 +289,15 @@ public class ShopRoom extends SpecialRoom {
 		Item rare;
 		switch (Random.Int(10)){
 			case 0:
-				rare = Generator.random( Generator.Category.WAND );
+				rare = Loot.random( Loot.WAND );
 				rare.level( 0 );
 				break;
 			case 1:
-				rare = Generator.random(Generator.Category.RING);
+				rare = Loot.random(Loot.RING);
 				rare.level( 0 );
 				break;
 			case 2:
-				rare = Generator.random( Generator.Category.ARTIFACT );
+				rare = Loot.random( Loot.ARTIFACT );
 				break;
 			default:
 				rare = new Stylus();

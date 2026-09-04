@@ -64,7 +64,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.npcs.DirectableAlly;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Surprise;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Wound;
-import com.shatteredpixel.shatteredpixeldungeon.items.Generator;
+import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.MasterThievesArmband;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TimekeepersHourglass;
@@ -1073,19 +1073,19 @@ public abstract class Mob extends Char {
 	@SuppressWarnings("unchecked")
 	public Item createLoot() {
 		Item item;
-		if (loot instanceof Generator.Category) {
+		if (loot instanceof String) {
 
-			item = Generator.randomUsingDefaults( (Generator.Category)loot );
+			item = Loot.randomUsingDefaults( (String)loot );
 
 		} else if (loot instanceof Class<?>) {
 
 			if (ExoticScroll.regToExo.containsKey(loot)){
 				if (Random.Float() < ExoticCrystals.consumableExoticChance()){
-					return Generator.random(ExoticScroll.regToExo.get(loot));
+					return Loot.random(ExoticScroll.regToExo.get(loot));
 				}
 			}
 
-			item = Generator.random( (Class<? extends Item>)loot );
+			item = Loot.random( (Class<? extends Item>)loot );
 
 		} else {
 

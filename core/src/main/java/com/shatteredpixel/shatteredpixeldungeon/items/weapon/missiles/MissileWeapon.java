@@ -25,13 +25,16 @@ import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.CrippleBlob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.CrippleDebuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MagicImmune;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Momentum;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PinCushion;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.RevealedArea;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
@@ -42,7 +45,10 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.curses.Explosive;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.enchantments.Projecting;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.Dart;
+import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
+import com.shatteredpixel.shatteredpixeldungeon.effects.particles.CrippleBlobParticle;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.watabou.utils.PathFinder;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
@@ -272,10 +278,42 @@ abstract public class MissileWeapon extends Weapon {
 			if (!curUser.shoot( enemy, this )) {
 				rangedMiss( cell );
 			} else {
-				
+
 				rangedHit( enemy, cell );
 
 			}
+		}
+
+		//MISERY CRIPPLE_BLOB: thrown weapons create cripple miasma on impact
+		if (curUser instanceof Hero && ((Hero)curUser).subClass == HeroSubClass.MISERY
+				&& ((Hero)curUser).hasTalent(Talent.MISERY_CRIPPLE_BLOB)
+				&& curUser.buff(Talent.CrippleBlobCooldown.class) == null){
+			int pts = ((Hero)curUser).pointsInTalent(Talent.MISERY_CRIPPLE_BLOB);
+			int radius = pts * 2 + 1;
+
+			CrippleBlob cblob = (CrippleBlob) Dungeon.level.blobs.get(CrippleBlob.class);
+			if (cblob == null){
+				cblob = new CrippleBlob();
+				Dungeon.level.blobs.put(CrippleBlob.class, cblob);
+				GameScene.add(cblob);
+			}
+			cblob.seed(Dungeon.level, cell, 15);
+			CellEmitter.get(cell).burst(CrippleBlobParticle.FACTORY, 8);
+
+			for (int n : PathFinder.NEIGHBOURS8){
+				int targetCell = cell + n;
+				if (targetCell < 0 || targetCell >= Dungeon.level.length()
+						|| Dungeon.level.distance(cell, targetCell) > radius) continue;
+				Char target = Actor.findChar(targetCell);
+				if (target != null && target.alignment == Char.Alignment.ENEMY){
+					Buff.affect(target, CrippleDebuff.class, 5f + pts * 2f);
+				}
+				if (Dungeon.level.passable[targetCell]){
+					cblob.seed(Dungeon.level, targetCell, 15);
+					CellEmitter.get(targetCell).burst(CrippleBlobParticle.FACTORY, 4);
+				}
+			}
+			Buff.affect(curUser, Talent.CrippleBlobCooldown.class, 30f - 5f * pts);
 		}
 	}
 

@@ -44,6 +44,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Burning;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ChampionEnemy;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Charm;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Chill;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.CrippleDebuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corrosion;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Corruption;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Cripple;
@@ -913,6 +914,8 @@ public abstract class Char extends Actor {
 			//slowed and chilled do not stack
 		} else if (buff( Chill.class ) != null) {
 			timeScale *= buff( Chill.class ).speedFactor();
+		} else if (buff( CrippleDebuff.class ) != null) {
+			timeScale *= buff( CrippleDebuff.class ).speedFactor();
 		}
 		super.spend( time / timeScale );
 	}

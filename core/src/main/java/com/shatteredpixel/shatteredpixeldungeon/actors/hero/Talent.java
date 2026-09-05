@@ -199,8 +199,32 @@ public enum Talent {
 	//universal T4
 	HEROIC_ENERGY(26, 4), //See icon() and title() for special logic for this one
 	//Ratmogrify T4
-	RATSISTANCE(215, 4), RATLOMACY(216, 4), RATFORCEMENTS(217, 4);
+	RATSISTANCE(215, 4), RATLOMACY(216, 4), RATFORCEMENTS(217, 4),
 
+	//MISERY T3 (icon ids temporarily reuse the rogue row until dedicated art exists)
+	MISERY_SHADOW_TELEPORT(75), MISERY_CRIPPLE_BLOB(76), MISERY_SOUL_REAP(77), MISERY_LAST_SHADOW(78);
+
+	//MISERY Last Shadow cooldown tracker (survives revival)
+	public static class LastShadowCooldown extends FlavourBuff{
+		{ revivePersists = true; }
+		public int icon() { return BuffIndicator.TIME; }
+		public void tintIcon(Image icon) { icon.hardlight(0.2f, 0.1f, 0.3f); }
+		public float iconFadePercent() {
+			int pts = Dungeon.hero != null ? Dungeon.hero.pointsInTalent(MISERY_LAST_SHADOW) : 1;
+			float maxCooldown = 300f - 50f * pts; //Lv1:250, Lv2:200, Lv3:150
+			return Math.max(0, visualcooldown() / maxCooldown);
+		}
+	};
+	//MISERY cripple blob cooldown tracker
+	public static class CrippleBlobCooldown extends FlavourBuff{
+		public int icon() { return BuffIndicator.TIME; }
+		public void tintIcon(Image icon) { icon.hardlight(0.4f, 0.1f, 0.3f); }
+		public float iconFadePercent() {
+			int pts = Dungeon.hero != null ? Dungeon.hero.pointsInTalent(MISERY_CRIPPLE_BLOB) : 1;
+			float cd = 30f - 5f * pts; //Lv1:25, Lv2:20, Lv3:15
+			return Math.max(0, visualcooldown() / cd);
+		}
+	};
 	public static class ImprovisedProjectileCooldown extends FlavourBuff{
 		public int icon() { return BuffIndicator.TIME; }
 		public void tintIcon(Image icon) { icon.hardlight(0.15f, 0.2f, 0.5f); }

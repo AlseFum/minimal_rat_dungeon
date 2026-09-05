@@ -28,6 +28,8 @@ import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.Statistics;
 import com.shatteredpixel.shatteredpixeldungeon.actors.ActionResult;
 import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.MiseryShadowBlob;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.CrippleDebuff;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.FailCause;
@@ -804,7 +806,8 @@ public abstract class Mob extends Char {
 		if ( !surprisedBy(enemy)
 				&& paralysed == 0
 				&& !(alignment == Alignment.ALLY && enemy == Dungeon.hero)) {
-			return this.defenseSkill;
+			//MISERY cripple miasma reduces evasion by 30%
+			return Math.round(this.defenseSkill * CrippleDebuff.evasionMultiplier(this));
 		} else {
 			return 0;
 		}
@@ -879,9 +882,15 @@ public abstract class Mob extends Char {
 	}
 
 	public boolean surprisedBy( Char enemy, boolean attacking ){
-		return enemy == Dungeon.hero
+		boolean isSurprise = enemy == Dungeon.hero
 				&& (enemy.invisible > 0 || !enemySeen || (fieldOfView != null && fieldOfView.length == Dungeon.level.length() && !fieldOfView[enemy.pos]))
 				&& (!attacking || enemy.canSurpriseAttack());
+
+		//MISERY: if in shadow cell, heroes can always get surprise attacks
+		if (!isSurprise && enemy == Dungeon.hero && MiseryShadowBlob.stealthMultiplier(Dungeon.hero) < 1f){
+			return true;
+		}
+		return isSurprise;
 	}
 
 	//whether the hero should interact with the mob (true) or attack it (false)
@@ -1026,6 +1035,9 @@ public abstract class Mob extends Char {
 		}
 
 		dropBonus += ShardOfOblivion.lootChanceMultiplier()-1f;
+
+		//MISERY SOUL_REAP: ambush kills increase loot
+		dropBonus *= MiseryShadowBlob.soulReapDropChance(Dungeon.hero, this);
 
 		return lootChance * dropBonus;
 	}

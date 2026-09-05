@@ -24,7 +24,9 @@ package com.shatteredpixel.shatteredpixeldungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Amok;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.MiseryShadowBlob;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.AscensionChallenge;
+import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroSubClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Dread;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Light;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.MindVision;
@@ -376,6 +378,11 @@ public class Dungeon {
 		
 		Dungeon.level = level;
 		hero.pos = pos;
+
+		//MISERY: regenerate the level's shadow rims
+		if (hero.subClass == HeroSubClass.MISERY){
+			MiseryShadowBlob.generateForLevel();
+		}
 
 		if (hero.buff(AscensionChallenge.class) != null){
 			hero.buff(AscensionChallenge.class).onLevelSwitch();

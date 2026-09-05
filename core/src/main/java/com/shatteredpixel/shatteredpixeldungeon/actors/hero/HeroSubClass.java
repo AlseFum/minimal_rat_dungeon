@@ -85,6 +85,10 @@ public class HeroSubClass {
 	public static final HeroSubClass PRIEST  = register(new HeroSubClass("PRIEST", HeroIcon.PRIEST, "priest_t3"));
 	public static final HeroSubClass PALADIN = register(new HeroSubClass("PALADIN", HeroIcon.PALADIN, "paladin_t3"));
 
+	//MISERY: shadow assassin from ZootDungeon. Not attached to any hero class;
+	//granted via the DebugMisery debug item. TODO: dedicated HeroIcon.
+	public static final HeroSubClass MISERY = register(new HeroSubClass("MISERY", HeroIcon.ASSASSIN, "misery_t3"));
+
 	// ==================== 数据字段 ====================
 
 	/** 子职业 id（沿用旧 enum 常量名；Messages 键与存档键一致） */

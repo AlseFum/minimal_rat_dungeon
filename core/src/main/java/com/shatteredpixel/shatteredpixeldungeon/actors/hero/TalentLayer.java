@@ -231,6 +231,7 @@ public class TalentLayer {
 		register(subclassLayer(HeroSubClass.MONK, Talent.UNENCUMBERED_SPIRIT, Talent.MONASTIC_VIGOR, Talent.COMBINED_ENERGY));
 		register(subclassLayer(HeroSubClass.PRIEST, Talent.HOLY_LANCE, Talent.HALLOWED_GROUND, Talent.MNEMONIC_PRAYER));
 		register(subclassLayer(HeroSubClass.PALADIN, Talent.LAY_ON_HANDS, Talent.AURA_OF_PROTECTION, Talent.WALL_OF_LIGHT));
+		register(subclassLayer(HeroSubClass.MISERY, Talent.MISERY_SHADOW_TELEPORT, Talent.MISERY_CRIPPLE_BLOB, Talent.MISERY_SOUL_REAP, Talent.MISERY_LAST_SHADOW));
 
 		// ---- 护甲技能层 t4（每个技能一层，含 HEROIC_ENERGY；与原 initArmorTalents 一致） ----
 

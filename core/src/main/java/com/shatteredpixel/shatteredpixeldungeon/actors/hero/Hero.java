@@ -69,6 +69,10 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.PhysicalEmpower;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Recharging;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Regeneration;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.SnipersMark;
+import com.shatteredpixel.shatteredpixeldungeon.actors.blobs.MiseryShadowBlob;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ShadowStepAction;
+import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.ShadowStrikeBuff;
+import com.shatteredpixel.shatteredpixeldungeon.ui.ActionIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.TimeStasis;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Vertigo;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.ArmorAbility;
@@ -932,6 +936,16 @@ public class Hero extends Char {
 		BuffIndicator.refreshHero();
 		BuffIndicator.refreshBoss();
 
+		//MISERY shadow-step action indicator
+		if (subClass == HeroSubClass.MISERY && Dungeon.level != null){
+			MiseryShadowBlob blob = (MiseryShadowBlob) Dungeon.level.blobs.get(MiseryShadowBlob.class);
+			if (blob != null && blob.findNearestShadow(pos) != -1){
+				ActionIndicator.setAction(ShadowStepAction.INSTANCE);
+			} else {
+				ActionIndicator.clearAction(ShadowStepAction.INSTANCE);
+			}
+		}
+
 		if (paralysed > 0) {
 
 			curAction = null;
@@ -1706,6 +1720,17 @@ public class Hero extends Char {
 	public int attackProc( final Char enemy, int damage ) {
 		damage = super.attackProc( enemy, damage );
 
+		//MISERY Shadow Strike: empowered next attack, +100% on ambush, +50% otherwise
+		ShadowStrikeBuff shadowStrike = buff(ShadowStrikeBuff.class);
+		if (shadowStrike != null){
+			if (enemy instanceof Mob && ((Mob)enemy).surprisedBy(this)){
+				damage = Math.round(damage * 2.0f);
+			} else {
+				damage = Math.round(damage * 1.5f);
+			}
+			shadowStrike.detach();
+		}
+
 		KindOfWeapon wep;
 		if (RingOfForce.fightingUnarmed(this) && !RingOfForce.unarmedGetsWeaponEnchantment(this)){
 			wep = null;
@@ -1761,9 +1786,21 @@ public class Hero extends Char {
 			}
 		}
 
+		//MISERY SOUL_REAP: ambush attacks steal life at talent levels 2 and 3
+		if (subClass == HeroSubClass.MISERY
+				&& hasTalent(Talent.MISERY_SOUL_REAP)
+				&& enemy instanceof Mob && ((Mob)enemy).surprisedBy(this)){
+			int pts = pointsInTalent(Talent.MISERY_SOUL_REAP);
+			float[] rates = {0f, 0f, 0.15f, 0.25f};
+			if (pts >= 2 && pts < rates.length){
+				int heal = Math.round(damage * rates[pts]);
+				if (heal > 0 && HP < HT) HP = Math.min(HT, HP + heal);
+			}
+		}
+
 		return damage;
 	}
-	
+
 	@Override
 	public int defenseProc( Char enemy, int damage ) {
 		
@@ -2320,7 +2357,27 @@ public class Hero extends Char {
 			}
 			return;
 		}
-		
+
+		//MISERY LAST_SHADOW: auto-teleport to the nearest shadow cell instead of dying
+		if (subClass == HeroSubClass.MISERY
+				&& hasTalent(Talent.MISERY_LAST_SHADOW)
+				&& buff(Talent.LastShadowCooldown.class) == null){
+			MiseryShadowBlob blob = (MiseryShadowBlob) Dungeon.level.blobs.get(MiseryShadowBlob.class);
+			if (blob != null){
+				int nearestShadow = blob.findNearestShadow(pos);
+				if (nearestShadow != -1){
+					HP = 1;
+					blob.teleportTo(this, nearestShadow);
+					HP = Math.max(HP, 1);
+					int pts = pointsInTalent(Talent.MISERY_LAST_SHADOW);
+					Buff.affect(this, Talent.LastShadowCooldown.class, 300f - 50f * pts);
+					GLog.p(Messages.get(this, "last_shadow_saved"));
+					interrupt();
+					return;
+				}
+			}
+		}
+
 		Actor.fixTime();
 		super.die( cause );
 		reallyDie( cause );

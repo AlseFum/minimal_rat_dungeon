@@ -84,9 +84,8 @@ public class WndBag extends WndTabbed {
 	}
 
 	public WndBag( Bag bag, ItemSelector selector ) {
-		
 		super();
-		
+
 		if( INSTANCE != null ){
 			INSTANCE.hide();
 		}

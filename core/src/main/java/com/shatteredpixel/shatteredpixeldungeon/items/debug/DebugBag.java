@@ -38,7 +38,9 @@ public class DebugBag extends Bag {
 
 	@Override
 	public int capacity() {
-		return Integer.MAX_VALUE;
+		//not literally unbounded: window/UI free-space loops iterate (capacity - filled) times,
+		//so an Integer.MAX_VALUE capacity would hang the game when this bag is opened
+		return Math.max(20, items.size() + 20);
 	}
 
 	@Override

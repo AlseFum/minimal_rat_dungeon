@@ -59,6 +59,10 @@ public class PhantomKnife extends MeleeWeapon {
 	/** fraction of the damage range kept as a lower bound on surprise hits */
 	public float ambushRate = 0.5f;
 
+	{
+		tier = 1; //原代码只在 randomize() 里设 tier；DebugWeaponBox 等直接 newInstance 的路径会得到默认 0，面板减半
+	}
+
 	static {
 		SpriteRegistry.r("ported.phantom_knife", "sprites/ported/phantom_knife.png", 0, 0, 64, 64);
 	}
@@ -149,27 +153,34 @@ public class PhantomKnife extends MeleeWeapon {
 	public int proc(Char attacker, Char defender, int damage) {
 		damage = super.proc(attacker, defender, damage);
 
-		if (attacker instanceof Hero) {
+		if (attacker instanceof Hero && defender instanceof Mob) {
 			Hero hero = (Hero) attacker;
+			Mob mob = (Mob) defender;
 
-			boolean isAmbush = defender instanceof Mob && ((Mob) defender).surprisedBy(hero);
+			boolean isAmbush = mob.surprisedBy(hero);
+			boolean willKill = mob.HP <= damage;
 
-			if (isAmbush) {
-				boolean willKill = defender.HP <= damage;
-
-				if (charge > 0 && !willKill) {
-					trySummonAndAttack(hero, defender);
-				}
-
-				if (willKill && charge < chargeCap) {
-					charge++;
-					updateQuickslot();
-					GLog.p(Messages.get(this, "msg_charge_up", charge, chargeCap));
-				}
+			//充能循环：击杀即充能（偷袭击杀翻倍）→ 蓄积的点数在偷袭命中未杀时花 1 点召影仆；
+			//影仆击杀返还 1 点（见 SummonedMinion.attack），使普通战斗也能持续供养召唤流。
+			if (willKill) {
+				gainCharge(isAmbush ? 2 : 1);
+			} else if (isAmbush && charge > 0) {
+				trySummonAndAttack(hero, mob);
 			}
 		}
 
 		return damage;
+	}
+
+	/** 充能 +amount，到 cap 封顶。 */
+	private void gainCharge(int amount) {
+		if (amount <= 0 || charge >= chargeCap) return;
+		int before = charge;
+		charge = Math.min(chargeCap, charge + amount);
+		if (charge != before) {
+			updateQuickslot();
+			GLog.p(Messages.get(this, "msg_charge_up", charge, chargeCap));
+		}
 	}
 
 	private void trySummonAndAttack(Hero hero, Char enemy) {
@@ -180,7 +191,7 @@ public class PhantomKnife extends MeleeWeapon {
 
 		int basePower = tier * 2;
 		int chargePower = Math.min(charge, chargeCap);
-		int powerLevel = basePower + chargePower;
+		int powerLevel = basePower + chargePower + level(); //随武器强化成长
 
 		SummonedMinion minion = new SummonedMinion(this, powerLevel, tier);
 		minion.pos = summonPos;
@@ -200,16 +211,6 @@ public class PhantomKnife extends MeleeWeapon {
 		if (enemy.isAlive() && Actor.findChar(enemy.pos) == enemy) {
 			minion.setEnemy(enemy);
 			minion.state = minion.HUNTING;
-		}
-	}
-
-	private void refundCharge(int amount) {
-		if (amount <= 0) return;
-		int before = charge;
-		charge = Math.min(chargeCap, charge + amount);
-		if (charge != before) {
-			updateQuickslot();
-			GLog.p(Messages.get(this, "msg_charge_up", charge, chargeCap));
 		}
 	}
 
@@ -275,7 +276,7 @@ public class PhantomKnife extends MeleeWeapon {
 		private int powerLevel;
 		private int weaponTier;
 		private int idleTurns = 0;
-		private static final int MAX_IDLE_TURNS = 5;
+		private static final int MAX_IDLE_TURNS = 8;
 
 		{
 			spriteClass = GhostSprite.class;
@@ -302,7 +303,7 @@ public class PhantomKnife extends MeleeWeapon {
 
 		@Override
 		public int damageRoll() {
-			int base = Random.NormalIntRange(1, 3);
+			int base = Random.NormalIntRange(2, 4);
 			return base + powerLevel + weaponTier;
 		}
 
@@ -321,7 +322,7 @@ public class PhantomKnife extends MeleeWeapon {
 			boolean wasAlive = enemy != null && enemy.isAlive();
 			boolean result = super.attack(enemy, dmgMulti, dmgBonus, accMulti, hitCount);
 			if (wasAlive && enemy != null && !enemy.isAlive() && enemy.alignment == Alignment.ENEMY) {
-				if (weapon != null) weapon.refundCharge(1);
+				if (weapon != null) weapon.gainCharge(1);
 			}
 			return result;
 		}

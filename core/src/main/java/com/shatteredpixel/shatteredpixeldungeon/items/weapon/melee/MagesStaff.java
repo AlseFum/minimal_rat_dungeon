@@ -72,7 +72,7 @@ public class MagesStaff extends MeleeWeapon {
 		hitSound = Assets.Sounds.HIT;
 		hitSoundPitch = 1.1f;
 
-		tier = 0;
+		tier = 1; //fork: 类内统一 tier=1，掉落的强度差异由 Loot.floatingTier 预强化提供
 
 		defaultAction = AC_ZAP;
 		usesTargeting = true;

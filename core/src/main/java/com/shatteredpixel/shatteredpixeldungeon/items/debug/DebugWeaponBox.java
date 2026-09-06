@@ -16,7 +16,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.AscalonAOE;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.BaseballBat;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.Chakram;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.DeployablewCrossBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.ported.PhantomKnife;
@@ -81,7 +80,7 @@ public class DebugWeaponBox extends Item implements DebugTool {
 	}
 
 	private static final Class<? extends Item>[] WEAPONS = new Class[]{
-			AscalonAOE.class, BaseballBat.class,
+			AscalonAOE.class,
 			Chakram.class,
 			DeployablewCrossBow.class,
 			PhantomKnife.class,

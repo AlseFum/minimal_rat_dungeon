@@ -46,7 +46,7 @@ public class Rapier extends MeleeWeapon {
 		hitSound = Assets.Sounds.HIT_SLASH;
 		hitSoundPitch = 1.3f;
 
-		tier = 0;
+		tier = 1; //fork: 类内统一 tier=1，掉落的强度差异由 Loot.floatingTier 预强化提供
 
 		bones = false;
 	}

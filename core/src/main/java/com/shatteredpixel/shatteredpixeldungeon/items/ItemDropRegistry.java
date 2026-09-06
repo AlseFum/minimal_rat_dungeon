@@ -275,23 +275,13 @@ public final class ItemDropRegistry {
 			item(WandOfTransfusion.class, WandOfTransfusion::new),
 			item(WandOfWarding.class, WandOfWarding::new),
 
-			// Melee weapons
+			// Melee weapons（一般武器；开局武器由 HeroClass 职业开局发放，不入掉落池）
 			item(Crossbow.class, Crossbow::new),
-			item(Dagger.class, Dagger::new),
 			item(Flail.class, Flail::new),
-			item(Greataxe.class, Greataxe::new),
-			item(Mace.class, Mace::new),
-			unique(MagesStaff.class, MagesStaff::new),
-			item(Quarterstaff.class, Quarterstaff::new),
-			item(Rapier.class, Rapier::new),
 			item(RoundShield.class, RoundShield::new),
-			item(RunicBlade.class, RunicBlade::new),
-			item(Sai.class, Sai::new),
 			item(Scimitar.class, Scimitar::new),
 			item(Sickle.class, Sickle::new),
 			item(Spear.class, Spear::new),
-			item(Sword.class, Sword::new),
-			item(Whip.class, Whip::new),
 
 			// Thrown weapons and darts
 			item(Bolas.class, Bolas::new),

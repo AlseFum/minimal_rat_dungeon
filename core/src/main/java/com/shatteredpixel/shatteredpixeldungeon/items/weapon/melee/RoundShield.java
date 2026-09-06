@@ -45,8 +45,8 @@ public class RoundShield extends MeleeWeapon {
 
 	@Override
 	public int max(int lvl) {
-		return  Math.round(3f*(tier+1)) +   //12 base, down from 20
-				lvl*(tier-1);               //+2 per level, down from +4
+		return  Math.round(3f*(tier+1)) +   //6 base（上游 tier3 公式残留，fork tier=1）
+				lvl*tier;                   //+1 per level（原 lvl*(tier-1) 在 tier=1 时归零，属 tier 重映射残留 bug，已修复）
 	}
 
 	@Override

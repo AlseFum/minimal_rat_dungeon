@@ -115,20 +115,16 @@ import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfWarding;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Crossbow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Dagger;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Flail;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Greataxe;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Mace;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Quarterstaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Rapier;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.RoundShield;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.RunicBlade;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sai;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Scimitar;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sickle;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Spear;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sword;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Whip;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.Bolas;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ForceCube;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.HeavyBoomerang;
@@ -371,25 +367,16 @@ public class Loot {
 			of("WEAPON").classes = new Class<?>[]{};
 			deck("WEAPON").probs = new float[]{};
 			
+			//一般武器（开局武器由职业发放，不入此池）。浮动强度见 randomWeapon/floatingTier。
 			of("WEP_T1").classes = new Class<?>[]{
-					MagesStaff.class,
-					Sword.class,
-					Mace.class,
-					Dagger.class,
-					Sai.class,
 					Spear.class,
 					RoundShield.class,
-					Rapier.class,
 					Sickle.class,
 					Crossbow.class,
 					Flail.class,
-					Greataxe.class,
-					Quarterstaff.class,
-					RunicBlade.class,
-					Scimitar.class,
-					Whip.class
+					Scimitar.class
 			};
-			of("WEP_T1").defaultProbs = new float[]{ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+			of("WEP_T1").defaultProbs = new float[]{ 1, 1, 1, 1, 1, 1 };
 			deck("WEP_T1").probs = of("WEP_T1").defaultProbs.clone();
 			
 			of("WEP_T2").classes = of("WEP_T1").classes;
@@ -571,8 +558,8 @@ public class Loot {
 	}
 	
 	public static Item random() {
-		// The five-level showcase deliberately ignores floor and tier. Every surviving,
-		// independently usable gameplay item has one equally weighted factory here.
+		// 平铺注册表：每个幸存物品一个等权工厂。近战武器会在生成后按楼层浮动预强化
+		// （见 floatingTier/applyDepthLevel）。
 		syncObservedUniqueItems();
 
 		int available = 0;
@@ -593,6 +580,7 @@ public class Loot {
 			}
 			if (selected-- == 0) {
 				Item result = entry.create().random();
+				applyDepthLevel(result);
 				trackUniqueDrop(entry, result);
 				return result;
 			}
@@ -729,6 +717,7 @@ public class Loot {
 		}
 
 		result = result.random();
+		applyDepthLevel(result);
 		trackObservedUnique(result);
 		return result;
 	}
@@ -741,6 +730,27 @@ public class Loot {
 		// floorSet remains in the signature for old room/reward callers; all five
 		// levels intentionally draw from the same surviving armor pool.
 		return (Armor) createRandom(of("ARMOR").classes[Random.Int(of("ARMOR").classes.length)]);
+	}
+
+	//武器掉落强度档：以 当前楼层/5 为基准，20% 低一档、50% 同档、30% 高一档（夹取到 [1,5]）。
+	//fork: 近战武器类内 tier 已统一为 1，掉落强度差异由本档位决定的预强化等级提供。
+	public static int floatingTier(){
+		int base = Dungeon.depth / 5;
+		float r = Random.Float();
+		int tier = base;
+		if (r < 0.2f){
+			tier = base - 1;
+		} else if (r > 0.7f){
+			tier = base + 1;
+		}
+		return Math.min(5, Math.max(1, tier));
+	}
+
+	//按 floatingTier 给近战武器预强化（tier-1 级），覆盖 Weapon.random() 自带的随机等级。
+	private static void applyDepthLevel(Item item){
+		if (item instanceof MeleeWeapon){
+			((MeleeWeapon) item).level(floatingTier() - 1);
+		}
 	}
 
 	public static final String[] wepTiers = new String[]{
@@ -764,8 +774,8 @@ public class Loot {
 	}
 	
 	public static MeleeWeapon randomWeapon(int floorSet, boolean useDefaults) {
-		// floorSet is retained for compatibility; tier-based selection is disabled
-		// while the five-level showcase uses one shared weapon pool.
+		// fork: 武器类内 tier 统一为 1，WEP_T1~T5 共享同一张一般武器池；
+		// floorSet 仅保留兼容，掉落的强度差异由 floatingTier 预强化（applyDepthLevel）提供。
 		return (MeleeWeapon) (useDefaults
 				? randomUsingDefaults(WEP_T1)
 				: random(WEP_T1));

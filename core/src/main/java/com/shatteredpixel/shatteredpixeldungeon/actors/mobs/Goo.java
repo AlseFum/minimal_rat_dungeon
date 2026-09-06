@@ -33,6 +33,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Invisibility;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.LockedFloor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Ooze;
 import com.shatteredpixel.shatteredpixeldungeon.effects.FloatingText;
+import com.shatteredpixel.shatteredpixeldungeon.items.KingsCrown;
+import com.shatteredpixel.shatteredpixeldungeon.items.TengusMask;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.DriedRose;
 import com.shatteredpixel.shatteredpixeldungeon.items.keys.Key;
 import com.shatteredpixel.shatteredpixeldungeon.items.quest.GooBlob;
@@ -299,7 +301,18 @@ public class Goo extends Mob {
 			} while (!Dungeon.level.passable[pos + ofs]);
 			Dungeon.level.drop( new GooBlob(), pos + ofs ).sprite.drop( pos );
 		}
-		
+
+		// 王冠/面具已移出掉落池：boss 层通关（Goo 死亡）时若背包没有则直接发放。
+		// DEMO 开局已白送（HeroClass.initHero），此处 no-op；INFINITE 首次击杀补齐。
+		if (Dungeon.hero != null && Dungeon.hero.belongings != null && Dungeon.hero.isAlive()) {
+			if (Dungeon.hero.belongings.getItem(TengusMask.class) == null) {
+				new TengusMask().collect();
+			}
+			if (Dungeon.hero.belongings.getItem(KingsCrown.class) == null) {
+				new KingsCrown().collect();
+			}
+		}
+
 		Badges.validateBossSlain();
 		if (Statistics.qualifiedForBossChallengeBadge){
 			Badges.validateBossChallengeCompleted();

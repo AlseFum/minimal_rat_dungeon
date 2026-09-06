@@ -64,7 +64,7 @@ public class GrassyGraveRoom extends StandardRoom {
 			int pos = w > h ?
 					left + 1 + shift + i * 2 + (top + 2 + Random.Int( h-2 )) * level.width() :
 					(left + 2 + Random.Int( w-2 )) + (top + 1 + shift + i * 2) * level.width();
-			level.drop( i == index ? Loot.random() : new Gold().random(), pos ).type = Heap.Type.TOMB;
+			level.drop( i == index ? Loot.randomGear() : new Gold().random(), pos ).type = Heap.Type.TOMB;
 		}
 	}
 }

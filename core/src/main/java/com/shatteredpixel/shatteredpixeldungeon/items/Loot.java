@@ -558,32 +558,33 @@ public class Loot {
 	}
 	
 	public static Item random() {
-		// 平铺注册表：每个幸存物品一个等权工厂。近战武器会在生成后按楼层浮动预强化
-		// （见 floatingTier/applyDepthLevel）。
+		// 平铺注册表加权抽取（常见 10 / 罕见 4 / 稀有 1）；已生成的 unique 条目权重按 0 处理。
+		// 近战武器会在生成后按楼层浮动预强化（见 floatingTier/applyDepthLevel）。
 		syncObservedUniqueItems();
 
-		int available = 0;
+		float sum = 0;
 		for (ItemDropRegistry.Entry entry : ItemDropRegistry.entries()) {
 			if (!entry.unique() || !generatedUniqueItems.contains(entry.type())) {
-				available++;
+				sum += entry.weight();
 			}
 		}
 
-		if (available == 0) {
+		if (sum <= 0) {
 			throw new IllegalStateException("The flat item drop registry has no available entries");
 		}
 
-		int selected = Random.Int(available);
+		float roll = Random.Float(sum);
 		for (ItemDropRegistry.Entry entry : ItemDropRegistry.entries()) {
 			if (entry.unique() && generatedUniqueItems.contains(entry.type())) {
 				continue;
 			}
-			if (selected-- == 0) {
+			if (roll < entry.weight()) {
 				Item result = entry.create().random();
 				applyDepthLevel(result);
 				trackUniqueDrop(entry, result);
 				return result;
 			}
+			roll -= entry.weight();
 		}
 
 		throw new IllegalStateException("The flat item drop registry changed during selection");
@@ -623,6 +624,15 @@ public class Loot {
 				removeArtifact((Class<? extends Artifact>) resultType);
 			}
 		}
+	}
+
+	//特殊格装备渠道（SecretSummoningRoom / GrassyGraveRoom）：先按权重选装备类别，
+	//再走各装备类别既有的 deck 抽取（ARTIFACT 用尽时 random(cat) 自动回退戒指，不会死链）。
+	private static final String[] GEAR_CATS = { WEAPON, ARMOR, MISSILE, WAND, RING, ARTIFACT, TRINKET };
+	private static final float[] GEAR_CAT_WEIGHTS = { 20, 20, 15, 15, 10, 10, 10 };
+
+	public static Item randomGear() {
+		return random( GEAR_CATS[ Random.chances( GEAR_CAT_WEIGHTS ) ] );
 	}
 
 	public static Item randomUsingDefaults(){

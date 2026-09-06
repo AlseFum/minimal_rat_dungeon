@@ -21,24 +21,18 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
-import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.bombs.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.food.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.journal.Guidebook;
-import com.shatteredpixel.shatteredpixeldungeon.items.keys.Key;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.*;
-import com.shatteredpixel.shatteredpixeldungeon.items.quest.*;
-import com.shatteredpixel.shatteredpixeldungeon.items.remains.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.*;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.spells.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.stones.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.*;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.*;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.*;
@@ -57,8 +51,12 @@ import java.util.function.Supplier;
  * The single, floor-independent item drop registry used by {@link Loot#random()}.
  *
  * <p>This list is deliberately explicit. It gives every independently usable gameplay
- * item one equally weighted factory, makes deletions fail visibly at compile time, avoids
- * runtime classpath scanning, and does not rely on reflective construction.</p>
+ * item an explicitly weighted factory (三档权重：常见 10 / 罕见 4 / 稀有 1), makes
+ * deletions fail visibly at compile time, avoids runtime classpath scanning, and does
+ * not rely on reflective construction. Unique entries are fixed at the rare tier and
+ * are skipped by {@link Loot#random()} once generated this run. Items that only spawn
+ * through scripted channels (quest rewards, guaranteed drops, alchemy, hero starts)
+ * are intentionally absent from this list.</p>
  */
 public final class ItemDropRegistry {
 
@@ -70,11 +68,13 @@ public final class ItemDropRegistry {
 		private final Class<? extends Item> type;
 		private final Supplier<? extends Item> factory;
 		private final boolean unique;
+		private final int weight;
 
-		private Entry(Class<? extends Item> type, Supplier<? extends Item> factory, boolean unique) {
+		private Entry(Class<? extends Item> type, Supplier<? extends Item> factory, boolean unique, int weight) {
 			this.type = type;
 			this.factory = factory;
 			this.unique = unique;
+			this.weight = weight;
 		}
 
 		public Class<? extends Item> type() {
@@ -88,39 +88,46 @@ public final class ItemDropRegistry {
 		public boolean unique() {
 			return unique;
 		}
+
+		//三档权重：常见 10 / 罕见 4 / 稀有 1；unique 条目固定稀有档
+		public int weight() {
+			return weight;
+		}
 	}
 
 	private static Entry item(Class<? extends Item> type, Supplier<? extends Item> factory) {
-		return new Entry(type, factory, false);
+		return new Entry(type, factory, false, 10);
+	}
+
+	private static Entry uncommon(Class<? extends Item> type, Supplier<? extends Item> factory) {
+		return new Entry(type, factory, false, 4);
+	}
+
+	private static Entry rare(Class<? extends Item> type, Supplier<? extends Item> factory) {
+		return new Entry(type, factory, false, 1);
 	}
 
 	private static Entry unique(Class<? extends Item> type, Supplier<? extends Item> factory) {
-		return new Entry(type, factory, true);
+		return new Entry(type, factory, true, 1);
 	}
 
 	private static final List<Entry> ENTRIES = Collections.unmodifiableList(Arrays.asList(
-			// Core items
-			unique(Amulet.class, Amulet::new),
-			item(Ankh.class, Ankh::new),
-			item(ArcaneResin.class, ArcaneResin::new),
-			unique(BrokenSeal.class, BrokenSeal::new),
-			item(Dewdrop.class, Dewdrop::new),
-			item(EnergyCrystal.class, EnergyCrystal::new),
+			// Core items（Amulet/王冠/面具/开局物等仅脚本化来源，不入池）
+			uncommon(Ankh.class, Ankh::new),
+			uncommon(ArcaneResin.class, ArcaneResin::new),
+			uncommon(Dewdrop.class, Dewdrop::new),
+			uncommon(EnergyCrystal.class, EnergyCrystal::new),
 			item(Gold.class, Gold::new),
-			item(Honeypot.class, Honeypot::new),
-			unique(KingsCrown.class, KingsCrown::new),
-			item(LiquidMetal.class, LiquidMetal::new),
-			item(Stylus.class, Stylus::new),
-			unique(TengusMask.class, TengusMask::new),
-			item(Torch.class, Torch::new),
-			unique(Waterskin.class, Waterskin::new),
+			uncommon(Honeypot.class, Honeypot::new),
+			uncommon(LiquidMetal.class, LiquidMetal::new),
+			uncommon(Stylus.class, Stylus::new),
+			uncommon(Torch.class, Torch::new),
 
 			// Armor
 			item(Armor.class, Armor::new),
 
-			// Artifacts and their independently collectible upgrade items
+			// Artifacts are run-unique, kept at the rare tier
 			unique(AlchemistsToolkit.class, AlchemistsToolkit::new),
-			unique(CapeOfThorns.class, CapeOfThorns::new),
 			unique(ChaliceOfBlood.class, ChaliceOfBlood::new),
 			unique(CloakOfShadows.class, CloakOfShadows::new),
 			unique(DriedRose.class, DriedRose::new),
@@ -133,17 +140,17 @@ public final class ItemDropRegistry {
 			unique(TalismanOfForesight.class, TalismanOfForesight::new),
 			unique(TimekeepersHourglass.class, TimekeepersHourglass::new),
 			unique(UnstableSpellbook.class, UnstableSpellbook::new),
-			item(DriedRose.Petal.class, DriedRose.Petal::new),
-			item(TimekeepersHourglass.sandBag.class, TimekeepersHourglass.sandBag::new),
+			uncommon(DriedRose.Petal.class, DriedRose.Petal::new),
+			uncommon(TimekeepersHourglass.sandBag.class, TimekeepersHourglass.sandBag::new),
 
-			// Bombs
-			item(Bomb.class, Bomb::new),
-			item(PayloadBomb.class, PayloadBomb::randomPayload),
-			item(HolyBomb.class, HolyBomb::new),
-			item(Noisemaker.class, Noisemaker::new),
-			item(RegrowthBomb.class, RegrowthBomb::new),
-			item(WoollyBomb.class, WoollyBomb::new),
-			item(Bomb.DoubleBomb.class, Bomb.DoubleBomb::new),
+			// Bombs（均有 Bomb+原料 炼金配方兜底）
+			uncommon(Bomb.class, Bomb::new),
+			uncommon(PayloadBomb.class, PayloadBomb::randomPayload),
+			uncommon(HolyBomb.class, HolyBomb::new),
+			uncommon(Noisemaker.class, Noisemaker::new),
+			uncommon(RegrowthBomb.class, RegrowthBomb::new),
+			uncommon(WoollyBomb.class, WoollyBomb::new),
+			uncommon(Bomb.DoubleBomb.class, Bomb.DoubleBomb::new),
 
 			// Food
 			item(Berry.class, Berry::new),
@@ -159,10 +166,9 @@ public final class ItemDropRegistry {
 			item(Blandfruit.Chunks.class, Blandfruit.Chunks::new),
 
 			// The retained journal example is a usable pickup, not a UI placeholder
-			item(Guidebook.class, Guidebook::new),
+			uncommon(Guidebook.class, Guidebook::new),
 
-			// Keys use the current floor so every randomly dropped key is functional
-			unique(Key.class, () -> Key.random(Dungeon.depth)),
+			// Keys are scripted with their locks and never roll from this pool
 
 			// The reduced potion family keeps one representative per core effect.
 			item(PotionOfFrost.class, PotionOfFrost::new),
@@ -173,35 +179,12 @@ public final class ItemDropRegistry {
 			item(PotionOfPurity.class, PotionOfPurity::new),
 			item(PotionOfToxicGas.class, PotionOfToxicGas::new),
 
-			// Quest and boss materials
-			unique(DarkGold.class, DarkGold::new),
-			item(GooBlob.class, GooBlob::new),
-			unique(Pickaxe.class, Pickaxe::new),
+			// Rings（Ring 统一随机九种效果，deck 概率 27:3:3）
+			rare(Ring.class, Ring::new),
+			rare(RingOfForce.class, RingOfForce::new),
+			rare(RingOfWealth.class, RingOfWealth::new),
 
-			// Hero-remains rewards
-			item(BowFragment.class, BowFragment::new),
-			item(BrokenHilt.class, BrokenHilt::new),
-			item(BrokenStaff.class, BrokenStaff::new),
-			item(CloakScrap.class, CloakScrap::new),
-			item(SealShard.class, SealShard::new),
-			item(TornPage.class, TornPage::new),
-
-			// Rings
-			item(Ring.class, Ring::new),
-			item(RingOfForce.class, RingOfForce::new),
-			item(RingOfWealth.class, RingOfWealth::new),
-
-			// Scrolls and exotic scrolls
-			item(ScrollOfAntiMagic.class, ScrollOfAntiMagic::new),
-			item(ScrollOfChallenge.class, ScrollOfChallenge::new),
-			item(ScrollOfDivination.class, ScrollOfDivination::new),
-			item(ScrollOfDread.class, ScrollOfDread::new),
-			unique(ScrollOfEnchantment.class, ScrollOfEnchantment::new),
-			item(ScrollOfForesight.class, ScrollOfForesight::new),
-			item(ScrollOfPassage.class, ScrollOfPassage::new),
-			item(ScrollOfPrismaticImage.class, ScrollOfPrismaticImage::new),
-			item(ScrollOfPsionicBlast.class, ScrollOfPsionicBlast::new),
-			item(ScrollOfSirensSong.class, ScrollOfSirensSong::new),
+			// Regular scrolls（SoU 由 souNeeded 保底；exotic 卷轴由炼金 ScrollToExotic 产出，均不入池）
 			item(ScrollOfIdentify.class, ScrollOfIdentify::new),
 			item(ScrollOfLullaby.class, ScrollOfLullaby::new),
 			item(ScrollOfMagicMapping.class, ScrollOfMagicMapping::new),
@@ -213,37 +196,32 @@ public final class ItemDropRegistry {
 			item(ScrollOfTeleportation.class, ScrollOfTeleportation::new),
 			item(ScrollOfTerror.class, ScrollOfTerror::new),
 			item(ScrollOfTransmutation.class, ScrollOfTransmutation::new),
-			unique(ScrollOfUpgrade.class, ScrollOfUpgrade::new),
 
-			// Alchemical spells
-			item(Alchemize.class, Alchemize::new),
-			item(BeaconOfReturning.class, BeaconOfReturning::new),
-			item(CurseInfusion.class, CurseInfusion::new),
-			unique(MagicalInfusion.class, MagicalInfusion::new),
-			item(PhaseShift.class, PhaseShift::new),
-			item(ReclaimTrap.class, ReclaimTrap::new),
-			item(Recycle.class, Recycle::new),
-			item(SummonElemental.class, SummonElemental::new),
-			item(TelekineticGrab.class, TelekineticGrab::new),
-			item(UnstableSpell.class, UnstableSpell::new),
-			item(WildEnergy.class, WildEnergy::new),
+			// Alchemical spells（均有 Recipe 炼金配方兜底；MagicalInfusion 仅 SoU 合成）
+			uncommon(Alchemize.class, Alchemize::new),
+			uncommon(BeaconOfReturning.class, BeaconOfReturning::new),
+			uncommon(CurseInfusion.class, CurseInfusion::new),
+			uncommon(PhaseShift.class, PhaseShift::new),
+			uncommon(ReclaimTrap.class, ReclaimTrap::new),
+			uncommon(Recycle.class, Recycle::new),
+			uncommon(SummonElemental.class, SummonElemental::new),
+			uncommon(TelekineticGrab.class, TelekineticGrab::new),
+			uncommon(UnstableSpell.class, UnstableSpell::new),
+			uncommon(WildEnergy.class, WildEnergy::new),
 
-			// Runestones
+			// Runestones（Enchantment 由 6-19 层保底/合成；Augmentation 每商店 1 个/合成，均不入池）
 			item(StoneOfAggression.class, StoneOfAggression::new),
-			item(StoneOfAugmentation.class, StoneOfAugmentation::new),
 			item(StoneOfBlast.class, StoneOfBlast::new),
 			item(StoneOfBlink.class, StoneOfBlink::new),
 			item(StoneOfClairvoyance.class, StoneOfClairvoyance::new),
 			item(StoneOfDeepSleep.class, StoneOfDeepSleep::new),
 			item(StoneOfDetectMagic.class, StoneOfDetectMagic::new),
-			unique(StoneOfEnchantment.class, StoneOfEnchantment::new),
 			item(StoneOfFear.class, StoneOfFear::new),
 			item(StoneOfFlock.class, StoneOfFlock::new),
 			item(StoneOfIntuition.class, StoneOfIntuition::new),
 			item(StoneOfShock.class, StoneOfShock::new),
 
-			// Trinkets and their catalyst
-			unique(TrinketCatalyst.class, TrinketCatalyst::new),
+			// Trinkets are run-unique；催化剂由 1-4 层保底发放，不入池
 			unique(ChaoticCenser.class, ChaoticCenser::new),
 			unique(CrackedSpyglass.class, CrackedSpyglass::new),
 			unique(DimensionalSundial.class, DimensionalSundial::new),
@@ -260,20 +238,20 @@ public final class ItemDropRegistry {
 			unique(VialOfBlood.class, VialOfBlood::new),
 			unique(WondrousResin.class, WondrousResin::new),
 
-			// Wands
-			item(WandOfBlastWave.class, WandOfBlastWave::new),
-			item(WandOfCorrosion.class, WandOfCorrosion::new),
-			item(WandOfCorruption.class, WandOfCorruption::new),
-			item(WandOfDisintegration.class, WandOfDisintegration::new),
-			item(WandOfFireblast.class, WandOfFireblast::new),
-			item(WandOfFrost.class, WandOfFrost::new),
-			item(WandOfLightning.class, WandOfLightning::new),
-			item(WandOfLivingEarth.class, WandOfLivingEarth::new),
-			item(WandOfMagicMissile.class, WandOfMagicMissile::new),
-			item(WandOfPrismaticLight.class, WandOfPrismaticLight::new),
-			item(WandOfRegrowth.class, WandOfRegrowth::new),
-			item(WandOfTransfusion.class, WandOfTransfusion::new),
-			item(WandOfWarding.class, WandOfWarding::new),
+			// Wands（充能武器，稀有档）
+			rare(WandOfBlastWave.class, WandOfBlastWave::new),
+			rare(WandOfCorrosion.class, WandOfCorrosion::new),
+			rare(WandOfCorruption.class, WandOfCorruption::new),
+			rare(WandOfDisintegration.class, WandOfDisintegration::new),
+			rare(WandOfFireblast.class, WandOfFireblast::new),
+			rare(WandOfFrost.class, WandOfFrost::new),
+			rare(WandOfLightning.class, WandOfLightning::new),
+			rare(WandOfLivingEarth.class, WandOfLivingEarth::new),
+			rare(WandOfMagicMissile.class, WandOfMagicMissile::new),
+			rare(WandOfPrismaticLight.class, WandOfPrismaticLight::new),
+			rare(WandOfRegrowth.class, WandOfRegrowth::new),
+			rare(WandOfTransfusion.class, WandOfTransfusion::new),
+			rare(WandOfWarding.class, WandOfWarding::new),
 
 			// Melee weapons（一般武器；开局武器由 HeroClass 职业开局发放，不入掉落池）
 			item(Crossbow.class, Crossbow::new),
@@ -283,7 +261,7 @@ public final class ItemDropRegistry {
 			item(Sickle.class, Sickle::new),
 			item(Spear.class, Spear::new),
 
-			// Thrown weapons and darts
+			// Thrown weapons and darts（TippedDart 需先有 Dart 上毒/蘸药）
 			item(Bolas.class, Bolas::new),
 			item(ForceCube.class, ForceCube::new),
 			item(HeavyBoomerang.class, HeavyBoomerang::new),
@@ -293,8 +271,7 @@ public final class ItemDropRegistry {
 			item(ThrowingStone.class, ThrowingStone::new),
 			item(Tomahawk.class, Tomahawk::new),
 			item(Dart.class, Dart::new),
-			item(TippedDart.class, () -> TippedDart.randomEffect(1)),
-			unique(SpiritBow.class, SpiritBow::new),
+			uncommon(TippedDart.class, () -> TippedDart.randomEffect(1)),
 
 			// Every surviving independently plantable seed
 			item(BlandfruitBush.Seed.class, BlandfruitBush.Seed::new),
@@ -304,12 +281,11 @@ public final class ItemDropRegistry {
 			item(Firebloom.Seed.class, Firebloom.Seed::new),
 			item(Icecap.Seed.class, Icecap.Seed::new),
 			item(Mageroyal.Seed.class, Mageroyal.Seed::new),
-			unique(Rotberry.Seed.class, Rotberry.Seed::new),
 			item(Sorrowmoss.Seed.class, Sorrowmoss.Seed::new),
 			item(Starflower.Seed.class, Starflower.Seed::new),
 			item(Stormvine.Seed.class, Stormvine.Seed::new),
-				item(Sungrass.Seed.class, Sungrass.Seed::new),
-				item(Swiftthistle.Seed.class, Swiftthistle.Seed::new)
+			item(Sungrass.Seed.class, Sungrass.Seed::new),
+			item(Swiftthistle.Seed.class, Swiftthistle.Seed::new)
 	));
 
 	private static final Map<Class<? extends Item>, Entry> BY_TYPE;

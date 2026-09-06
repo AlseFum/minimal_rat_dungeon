@@ -50,7 +50,7 @@ public class SecretSummoningRoom extends SecretRoom {
 		Painter.fill(level, this, 1, Terrain.SECRET_TRAP);
 		
 		Point center = center();
-		level.drop(Loot.random(), level.pointToCell(center)).setHauntedIfCursed().type = Heap.Type.SKELETON;
+		level.drop(Loot.randomGear(), level.pointToCell(center)).setHauntedIfCursed().type = Heap.Type.SKELETON;
 
 		float revealedChance = TrapMechanism.revealHiddenTrapChance();
 		float revealInc = 0;

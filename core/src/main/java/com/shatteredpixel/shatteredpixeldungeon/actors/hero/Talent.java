@@ -21,6 +21,8 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.actors.hero;
 
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
+
 import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.GamesInProgress;
@@ -54,7 +56,6 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.SpellSprite;
 import com.shatteredpixel.shatteredpixeldungeon.effects.particles.LeafParticle;
 import com.shatteredpixel.shatteredpixeldungeon.items.BrokenSeal;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
-import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.CloakOfShadows;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.HolyTome;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.HornOfPlenty;
@@ -68,7 +69,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ShardOfOblivion;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.Weapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sai;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
@@ -558,17 +558,8 @@ public enum Talent {
 			Item.updateQuickslot();
 		}
 
-		if (talent == UNENCUMBERED_SPIRIT && hero.pointsInTalent(talent) == 3){
-				Item toGive = new Armor().identify();
-			if (!toGive.collect()){
-				Dungeon.level.drop(toGive, hero.pos).sprite.drop();
-			}
-			toGive = new Sai().identify();
-			if (!toGive.collect()){
-				Dungeon.level.drop(toGive, hero.pos).sprite.drop();
-			}
-		}
-
+		//原作 Unencumbered Spirit（Duelist/Monk）为纯被动（低阶装备时回能加成），不发放物品；
+		//此处曾满级发放 Armor+Sai（Sai 已随开局武器全量对齐退役），已按原作移除。
 		if (talent == LIGHT_READING && hero.heroClass == HeroClass.CLERIC){
 			for (Item item : Dungeon.hero.belongings.backpack){
 				if (item instanceof HolyTome){

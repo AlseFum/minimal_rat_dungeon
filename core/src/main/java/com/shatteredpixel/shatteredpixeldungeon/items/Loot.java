@@ -112,7 +112,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfPrismaticLight
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfRegrowth;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfTransfusion;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfWarding;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Crossbow;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Dagger;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Flail;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Mace;
@@ -367,12 +366,13 @@ public class Loot {
 			of("WEAPON").classes = new Class<?>[]{};
 			deck("WEAPON").probs = new float[]{};
 			
-			//一般武器（开局武器由职业发放，不入此池）。浮动强度见 randomWeapon/floatingTier。
+			//一般武器池（Dagger 虽为盗贼开局武亦入池；Crossbow 属远程弹药系武器，
+			//仅在平铺池稀有掉落，不入此 deck）。浮动强度见 randomWeapon/floatingTier。
 			of("WEP_T1").classes = new Class<?>[]{
 					Spear.class,
 					RoundShield.class,
 					Sickle.class,
-					Crossbow.class,
+					Dagger.class,
 					Flail.class,
 					Scimitar.class
 			};

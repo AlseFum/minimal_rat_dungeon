@@ -253,13 +253,15 @@ public final class ItemDropRegistry {
 			rare(WandOfTransfusion.class, WandOfTransfusion::new),
 			rare(WandOfWarding.class, WandOfWarding::new),
 
-			// Melee weapons（一般武器；开局武器由 HeroClass 职业开局发放，不入掉落池）
-			item(Crossbow.class, Crossbow::new),
+			// Melee weapons（一般武入池；Dagger 虽为盗贼开局武亦入池，允许重复出现；
+			// Crossbow 属远程弹药系武器，只在平铺池稀有档掉落，不进 WEP deck）
+			item(Dagger.class, Dagger::new),
 			item(Flail.class, Flail::new),
 			item(RoundShield.class, RoundShield::new),
 			item(Scimitar.class, Scimitar::new),
 			item(Sickle.class, Sickle::new),
 			item(Spear.class, Spear::new),
+			rare(Crossbow.class, Crossbow::new),
 
 			// Thrown weapons and darts（TippedDart 需先有 Dart 上毒/蘸药）
 			item(Bolas.class, Bolas::new),

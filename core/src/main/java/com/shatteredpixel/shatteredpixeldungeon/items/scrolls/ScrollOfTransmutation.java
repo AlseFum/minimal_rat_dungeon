@@ -228,12 +228,13 @@ public class ScrollOfTransmutation extends InventoryScroll {
 	private static Weapon changeWeapon( Weapon w ) {
 		Weapon n;
 		String c;
+		//fork: tier 统一为 1，WEP/MIS 只保留单层池，直接走 WEP_T1/MIS_T1
 		if (w instanceof MeleeWeapon) {
-			c = Loot.wepTiers[((MeleeWeapon)w).tier - 1];
+			c = Loot.WEP_T1;
 		} else {
-			c = Loot.misTiers[((MissileWeapon)w).tier - 1];
+			c = Loot.MIS_T1;
 		}
-		
+
 		do {
 			n = (Weapon)Loot.randomUsingDefaults(c);
 		} while (Challenges.isItemBlocked(n) || n.getClass() == w.getClass());

@@ -21,16 +21,18 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee;
 
-/**
- * 牧师开局专属短棍，忠实还原原作 Cudgel：
- * 一支为贵族防身打造的小型黄铜棍。沿 Mace 面板（fork +0 即 1-8，同原作），
- * 但去掉硬头锤的高命中加成——朴实钝器。
- * <p>开局专属，不入任何掉落池。
- */
-public class Cudgel extends Mace {
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+public class Cudgel extends MeleeWeapon {
 
 	{
+		image = ItemSpriteSheet.MACE;
 		ACC = 1f; //黄铜短棍无硬头锤的命中加成
+	}
+
+	@Override
+	public int max(int lvl) {
+		return  4*(tier+1) +
+				lvl*(tier+1);
 	}
 
 }

@@ -49,7 +49,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLiquidFlame;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfPurity;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfToxicGas;
-import com.shatteredpixel.shatteredpixeldungeon.items.quest.Pickaxe;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfForce;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfWealth;
@@ -114,12 +113,8 @@ import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfTransfusion;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfWarding;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Dagger;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Flail;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Mace;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Rapier;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.RoundShield;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sai;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Scimitar;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sickle;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Spear;
@@ -167,18 +162,11 @@ public class Loot {
 
 	public static final String TRINKET  = cat("TRINKET", 0, 0, Trinket.class);
 	public static final String WEAPON   = cat("WEAPON", 2, 2, MeleeWeapon.class);
+	//tier 已折叠统一为 1，掉落实力由 floatingTier 预强化提供，故只保留单层 WEP_T1/MIS_T1
 	public static final String WEP_T1   = cat("WEP_T1", 0, 0, MeleeWeapon.class);
-	public static final String WEP_T2   = cat("WEP_T2", 0, 0, MeleeWeapon.class);
-	public static final String WEP_T3   = cat("WEP_T3", 0, 0, MeleeWeapon.class);
-	public static final String WEP_T4   = cat("WEP_T4", 0, 0, MeleeWeapon.class);
-	public static final String WEP_T5   = cat("WEP_T5", 0, 0, MeleeWeapon.class);
 	public static final String ARMOR    = cat("ARMOR", 2, 1, Armor.class );
 	public static final String MISSILE  = cat("MISSILE", 1, 2, MissileWeapon.class );
 	public static final String MIS_T1   = cat("MIS_T1", 0, 0, MissileWeapon.class );
-	public static final String MIS_T2   = cat("MIS_T2", 0, 0, MissileWeapon.class );
-	public static final String MIS_T3   = cat("MIS_T3", 0, 0, MissileWeapon.class );
-	public static final String MIS_T4   = cat("MIS_T4", 0, 0, MissileWeapon.class );
-	public static final String MIS_T5   = cat("MIS_T5", 0, 0, MissileWeapon.class );
 	public static final String WAND     = cat("WAND", 1, 1, Wand.class );
 	public static final String RING     = cat("RING", 1, 0, Ring.class );
 	public static final String ARTIFACT = cat("ARTIFACT", 0, 1, Artifact.class);
@@ -190,8 +178,8 @@ public class Loot {
 	public static final String GOLD     = cat("GOLD", 10, 10, Gold.class );
 
 	//声明顺序即物品排序与存档序号，勿动
-	private static final String[] ALL = { TRINKET, WEAPON, WEP_T1, WEP_T2, WEP_T3, WEP_T4, WEP_T5,
-		ARMOR, MISSILE, MIS_T1, MIS_T2, MIS_T3, MIS_T4, MIS_T5,
+	private static final String[] ALL = { TRINKET, WEAPON, WEP_T1,
+		ARMOR, MISSILE, MIS_T1,
 		WAND, RING, ARTIFACT, FOOD, POTION, SEED, SCROLL, STONE, GOLD };
 
 	//类别配置（静态初始化后只读）：每类物品清单与模板概率
@@ -366,35 +354,20 @@ public class Loot {
 			of("WEAPON").classes = new Class<?>[]{};
 			deck("WEAPON").probs = new float[]{};
 			
-			//一般武器池（Dagger 虽为盗贼开局武亦入池；Crossbow 属远程弹药系武器，
-			//仅在平铺池稀有掉落，不入此 deck）。浮动强度见 randomWeapon/floatingTier。
+			//一般武器池（Dagger 虽为盗贼开局武亦入池；Sword 通用剑入池作"普通武器"位；
+			//Crossbow 属远程弹药系武器，仅在平铺池稀有掉落，不入此 deck）。浮动强度见 randomWeapon/floatingTier。
 			of("WEP_T1").classes = new Class<?>[]{
 					Spear.class,
 					RoundShield.class,
 					Sickle.class,
 					Dagger.class,
 					Flail.class,
-					Scimitar.class
+					Scimitar.class,
+					Sword.class
 			};
-			of("WEP_T1").defaultProbs = new float[]{ 1, 1, 1, 1, 1, 1 };
+			of("WEP_T1").defaultProbs = new float[]{ 1, 1, 1, 1, 1, 1, 1 };
 			deck("WEP_T1").probs = of("WEP_T1").defaultProbs.clone();
-			
-			of("WEP_T2").classes = of("WEP_T1").classes;
-			of("WEP_T2").defaultProbs = of("WEP_T1").defaultProbs.clone();
-			deck("WEP_T2").probs = of("WEP_T2").defaultProbs.clone();
-			
-			of("WEP_T3").classes = of("WEP_T1").classes;
-			of("WEP_T3").defaultProbs = of("WEP_T1").defaultProbs.clone();
-			deck("WEP_T3").probs = of("WEP_T3").defaultProbs.clone();
-			
-			of("WEP_T4").classes = of("WEP_T1").classes;
-			of("WEP_T4").defaultProbs = of("WEP_T1").defaultProbs.clone();
-			deck("WEP_T4").probs = of("WEP_T4").defaultProbs.clone();
-			
-			of("WEP_T5").classes = of("WEP_T1").classes;
-			of("WEP_T5").defaultProbs = of("WEP_T1").defaultProbs.clone();
-			deck("WEP_T5").probs = of("WEP_T5").defaultProbs.clone();
-			
+
 			//see Generator.randomArmor
 			of("ARMOR").classes = new Class<?>[]{ Armor.class };
 			deck("ARMOR").probs = new float[]{ 1 };
@@ -416,23 +389,7 @@ public class Loot {
 			};
 			of("MIS_T1").defaultProbs = new float[]{ 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 			deck("MIS_T1").probs = of("MIS_T1").defaultProbs.clone();
-			
-			of("MIS_T2").classes = of("MIS_T1").classes;
-			of("MIS_T2").defaultProbs = of("MIS_T1").defaultProbs.clone();
-			deck("MIS_T2").probs = of("MIS_T2").defaultProbs.clone();
-			
-			of("MIS_T3").classes = of("MIS_T1").classes;
-			of("MIS_T3").defaultProbs = of("MIS_T1").defaultProbs.clone();
-			deck("MIS_T3").probs = of("MIS_T3").defaultProbs.clone();
-			
-			of("MIS_T4").classes = of("MIS_T1").classes;
-			of("MIS_T4").defaultProbs = of("MIS_T1").defaultProbs.clone();
-			deck("MIS_T4").probs = of("MIS_T4").defaultProbs.clone();
-			
-			of("MIS_T5").classes = of("MIS_T1").classes;
-			of("MIS_T5").defaultProbs = of("MIS_T1").defaultProbs.clone();
-			deck("MIS_T5").probs = of("MIS_T5").defaultProbs.clone();
-			
+
 			of("FOOD").classes = new Class<?>[]{
 					Food.class,
 					Pasty.class,
@@ -763,14 +720,6 @@ public class Loot {
 		}
 	}
 
-	public static final String[] wepTiers = new String[]{
-			WEP_T1,
-			WEP_T2,
-			WEP_T3,
-			WEP_T4,
-			WEP_T5
-	};
-
 	public static MeleeWeapon randomWeapon(){
 		return randomWeapon(0);
 	}
@@ -790,14 +739,6 @@ public class Loot {
 				? randomUsingDefaults(WEP_T1)
 				: random(WEP_T1));
 	}
-	
-	public static final String[] misTiers = new String[]{
-			MIS_T1,
-			MIS_T2,
-			MIS_T3,
-			MIS_T4,
-			MIS_T5
-	};
 	
 	public static MissileWeapon randomMissile(){
 		return randomMissile(0);

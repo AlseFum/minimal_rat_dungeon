@@ -21,14 +21,18 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee;
 
-/**
- * 猎人开局专属指虎，忠实还原原作 knuckleduster：0.5 攻速（每回合两击）的快拳武器。
- * 面板沿用 fork Sai（Sai 已退役，快拳定位由本类接替；原作 +0 数值为 1-5 同一量级，
- * 攻速 0.5 保证猎人开局近战手感不变）。
- * <p>开局专属，不入任何掉落池。
- */
-public class Knuckleduster extends Sai {
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+public class Knuckleduster extends MeleeWeapon {
 
-	//沿用 Sai 的贴图（双钗改绘前暂用同图）、0.5 攻速与面板
+	{
+		image = ItemSpriteSheet.SAI;
+		DLY = 0.5f; //2x speed
+	}
+
+	@Override
+	public int max(int lvl) {
+		return  Math.round(2.5f*(tier+1)) +
+				lvl*Math.round(0.5f*(tier+1));
+	}
 
 }

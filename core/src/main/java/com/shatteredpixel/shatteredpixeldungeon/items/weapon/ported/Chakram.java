@@ -34,14 +34,17 @@ import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.MissileSprite;
+import com.shatteredpixel.shatteredpixeldungeon.tiles.DungeonTilemap;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BuffIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
+import com.watabou.noosa.Game;
 import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Bundle;
+import com.watabou.utils.PointF;
 
 /**
- * 回旋武器：向选定方向沿直线飞出，穿透单位与可通行地形，在撞墙处短暂停留后再沿路径飞回英雄当前格；
- * 去程与回程各对路径上的敌人结算一次物理伤害（使用当前装备的该武器骰伤）。
+ * 回旋武器：向选定方向沿直线飞出，穿透单位与可通行地形，在撞墙处短暂停留后再实时追踪飞回英雄当前格；
+ * 去程与回程各对路径上的敌人结算一次物理伤害（无需装备在手，伤害按本武器自身骰伤结算，见 {@link #hitAlongPath}）。
  * <p>
  * 远端等待通过挂在英雄身上的 {@link ChakramReturn} 消耗 {@link Actor#TICK} 推进时间（与重回旋镖 CircleBack 同理），
  * 避免 {@code Actor.addDelayed} 在英雄尚未 {@code spend} 时卡住全局 Actor 调度。
@@ -52,7 +55,7 @@ import com.watabou.utils.Bundle;
 public class Chakram extends Weapon {
 
 	/** 抵达远端后，再经过多少个全局时间单位（每次 {@link Actor#TICK}）开始折返 */
-	private static final int HOVER_TICKS = 3;
+	private static final int HOVER_TICKS = 2;
 
 	private transient boolean throwing = false;
 
@@ -74,10 +77,7 @@ public class Chakram extends Weapon {
 		if (throwing) {
 			return;
 		}
-		if (!isEquipped(user)) {
-			GLog.w("回旋镖必须装备在主手或副手后才能掷出。");
-			return;
-		}
+		//无需装备在手：收在背包/快捷栏中同样可掷，伤害按本武器自身骰伤结算（见 hitAlongPath 的 thrownWeapon 挂载）
 		if (dst == user.pos) {
 			return;
 		}
@@ -132,7 +132,14 @@ public class Chakram extends Weapon {
 				// 防御/攻击 proc 与伤害结算）。minimal 无该 Damage 类：统一伤害入口是 actors.Proc 体系，
 				// Char.attack 内部即走 Proc.damage(...)（offender/weapon/way 正确归因），因此直接调用攻击管线，
 				// 保留命中、DR 与附魔/圣刻 proc 等全部机制。
-				hero.attack(ch, 1f, 0f, acc);
+				// 回旋镖未必装备在手（可从背包掷出）：临时挂到 thrownWeapon 上让攻击管线按本武器自身骰伤结算，
+				// 与 Hero.shoot() 对投掷物的处理一致（Hero.java:555-560）。
+				hero.belongings.thrownWeapon = this;
+				try {
+					hero.attack(ch, 1f, 0f, acc);
+				} finally {
+					hero.belongings.thrownWeapon = null;
+				}
 			}
 		}
 	}
@@ -176,24 +183,28 @@ public class Chakram extends Weapon {
 	@Override
 	public String desc() {
 		return "沿直线掷出，穿透路径上的敌人，在撞墙后会短暂停留再折返飞回手中；去程与回程都会各造成一次伤害。\n\n"
-				+ "_必须装备后才能投掷。_\n\n"
+				+ "_无需装备在手：收在背包或快捷栏中即可掷出，掷出期间不影响主手武器，飞回后回到原处（手中或背包）。_\n\n"
 				+ "力量需求：" + STRReq(buffedLvl()) + "\n"
 				+ "伤害：" + min() + "-" + max();
 	}
 
 	/**
-	 * 与 ZootDungeon 的 HeavyBoomerang.CircleBack 相同思路：用 Buff 每次 {@code spend(TICK)}
-	 * 推进时间线，再播放回程导弹。
+	 * 悬停计时用 Buff 每次 {@code spend(TICK)} 推进时间线（与 HeavyBoomerang.CircleBack 同理），
+	 * 折返飞行本身由 {@link HomingReturn} 每帧实时追踪英雄当前格，保证落回英雄本身而非其上一格。
 	 */
 	public static class ChakramReturn extends Buff {
 
 		private Chakram chakram;
 		private ItemSprite hover;
 		private int endCell;
+		private int throwDepth;
+		private int throwBranch;
 		private int ticksLeft;
 
 		private static final String CHAKRAM = "chakram";
 		private static final String END = "end_cell";
+		private static final String DEPTH = "throw_depth";
+		private static final String BRANCH = "throw_branch";
 		private static final String TICKS = "ticks_left";
 
 		{
@@ -205,6 +216,8 @@ public class Chakram extends Weapon {
 			chakram = weapon;
 			hover = hoverSprite;
 			endCell = end;
+			throwDepth = Dungeon.depth;
+			throwBranch = Dungeon.branch;
 			ticksLeft = HOVER_TICKS;
 		}
 
@@ -239,21 +252,24 @@ public class Chakram extends Weapon {
 				return true;
 			}
 
-			int returnTo = hero.pos;
-			final Ballistica inbound = new Ballistica(endCell, returnTo, Ballistica.STOP_SOLID);
-			((MissileSprite) hero.sprite.parent.recycle(MissileSprite.class)).reset(
-					endCell,
-					hero.sprite,
-					chakram,
-					() -> {
-						chakram.hitAlongPath(hero, returnTo, inbound);
-						Sample.INSTANCE.play(chakram.hitSound, 1f, chakram.hitSoundPitch * 0.9f);
-						chakram.throwing = false;
-						hero.spendAndNext(chakram.castDelay(hero, endCell));
-					});
+			//悬停期间英雄若已换层/换分支（走楼梯），旧层的远端停留点已无意义，直接收回状态
+			if (throwDepth != Dungeon.depth || throwBranch != Dungeon.branch) {
+				chakram.throwing = false;
+				detach();
+				return true;
+			}
+
+			//折返：由 HomingReturn 实时追踪英雄位置，抵达瞬间才按英雄当前格结算回程扫掠
+			if (hero.sprite == null || hero.sprite.parent == null) {
+				chakram.throwing = false;
+				detach();
+				return true;
+			}
+			HomingReturn flight = new HomingReturn(chakram, hero, endCell);
+			hero.sprite.parent.add(flight);
 
 			detach();
-			// return false 会让 Actor 线程 wait 且 current 仍指向本 Buff，GameScene 无法 notify（与 CircleBack 导弹里 next() 不同）。
+			// return false 会让 Actor 线程 wait 且 current 仍指向本 Buff，GameScene 无法 notify。
 			return true;
 		}
 
@@ -269,6 +285,8 @@ public class Chakram extends Weapon {
 			super.storeInBundle(bundle);
 			bundle.put(CHAKRAM, chakram);
 			bundle.put(END, endCell);
+			bundle.put(DEPTH, throwDepth);
+			bundle.put(BRANCH, throwBranch);
 			bundle.put(TICKS, ticksLeft);
 		}
 
@@ -277,8 +295,88 @@ public class Chakram extends Weapon {
 			super.restoreFromBundle(bundle);
 			chakram = (Chakram) bundle.get(CHAKRAM);
 			endCell = bundle.getInt(END);
+			throwDepth = bundle.getInt(DEPTH);
+			throwBranch = bundle.getInt(BRANCH);
 			ticksLeft = bundle.getInt(TICKS);
 			hover = null;
+		}
+	}
+
+	/**
+	 * 回程飞行体：不用一次性固定落点的 MissileSprite（英雄悬停/飞行途中移动会落到其上一格），
+	 * 而是每帧朝 {@code hero.sprite} 当前中心飞行，命中瞬间再以英雄当前格结算回程扫掠与行动代价。
+	 */
+	private static class HomingReturn extends ItemSprite {
+
+		/** 像素速度，与 {@link MissileSprite} 的 SPEED 一致 */
+		private static final float SPEED = 240f;
+		private static final float SPIN = 720f; //每帧自旋角度（度/秒）
+
+		private final Chakram chakram;
+		private final Hero hero;
+		private final int fromCell;
+		private boolean done = false;
+
+		HomingReturn(Chakram chakram, Hero hero, int fromCell) {
+			this.chakram = chakram;
+			this.hero = hero;
+			this.fromCell = fromCell;
+
+			view(chakram);
+			originToCenter();
+			//起点取远端停留格的像素中心
+			PointF start = DungeonTilemap.raisedTileCenterToWorld(fromCell);
+			center(start);
+		}
+
+		@Override
+		public void update() {
+			super.update();
+			if (done) {
+				return;
+			}
+
+			if (hero.sprite == null || hero.sprite.parent == null || !hero.isAlive()) {
+				//英雄中途死亡/离场：飞行体直接消失，状态由下次掷出时重建
+				done = true;
+				killAndErase();
+				chakram.throwing = false;
+				return;
+			}
+
+			angle += SPIN * Game.elapsed;
+
+			PointF target = hero.sprite.center();
+			PointF cur = center();
+			float dx = target.x - cur.x;
+			float dy = target.y - cur.y;
+			float dist = (float) Math.sqrt(dx * dx + dy * dy);
+			float step = SPEED * Game.elapsed;
+
+			if (dist <= step || dist < 1f) {
+				//抵达英雄：精确落在其当前中心
+				center(target);
+				arrive();
+			} else {
+				center(new PointF(cur.x + dx / dist * step, cur.y + dy / dist * step));
+			}
+		}
+
+		private void arrive() {
+			done = true;
+			killAndErase();
+			chakram.throwing = false;
+
+			if (!hero.isAlive() || Dungeon.hero != hero) {
+				return;
+			}
+
+			//抵达时才按英雄当前位置结算回程扫掠，避免悬停/飞行中移动造成的旧轨迹
+			int returnTo = hero.pos;
+			Ballistica inbound = new Ballistica(fromCell, returnTo, Ballistica.STOP_SOLID);
+			chakram.hitAlongPath(hero, returnTo, inbound);
+			Sample.INSTANCE.play(chakram.hitSound, 1f, chakram.hitSoundPitch * 0.9f);
+			hero.spendAndNext(chakram.castDelay(hero, fromCell));
 		}
 	}
 }

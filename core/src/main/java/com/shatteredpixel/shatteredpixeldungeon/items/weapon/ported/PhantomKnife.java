@@ -36,6 +36,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Dagger;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.GhostSprite;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
@@ -43,6 +44,8 @@ import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
+
+import java.util.ArrayList;
 
 /**
  * 由 ZootDungeon 项目的 items.weapon.PhantomKnife 移植而来。
@@ -56,11 +59,20 @@ import com.watabou.utils.Random;
  */
 public class PhantomKnife extends MeleeWeapon {
 
-	/** fraction of the damage range kept as a lower bound on surprise hits */
-	public float ambushRate = 0.5f;
+	/** 伤害区间保留为突袭下限的比例 */
+	private static final float AMBUSH_RATE = 0.5f;
+
+	/** 每次伏击（突袭）命中获得的充能 */
+	private static final int CHARGE_PER_AMBUSH = 1;
+
+	/** 每次召唤消耗 = 最大充能 ÷ 该分母（满充可连召三次） */
+	private static final int SUMMON_FRACTION = 3;
+
+	/** 突袭命中时按当前充能层数附加的伤害（每层 1 点） */
+	private static final int AMBUSH_DMG_PER_CHARGE = 1;
 
 	{
-		tier = 1; //原代码只在 randomize() 里设 tier；DebugWeaponBox 等直接 newInstance 的路径会得到默认 0，面板减半
+		tier = 1; //原代码只在 randomize() 里设 tier；DebugWeaponPool 等直接 newInstance 的路径会得到默认 0，面板减半
 	}
 
 	static {
@@ -73,21 +85,27 @@ public class PhantomKnife extends MeleeWeapon {
 				lvl*(tier+1);
 	}
 
+	/** 本次召唤的充能开销（最大充能 1/3，满充可召三次） */
+	private int summonCost() {
+		return Math.max(1, chargeCap / SUMMON_FRACTION);
+	}
+
 	@Override
 	public int damageRoll(Char owner) {
 		if (owner instanceof Hero) {
 			Hero hero = (Hero) owner;
 			Char enemy = hero.enemy();
 			if (enemy instanceof Mob && ((Mob) enemy).surprisedBy(hero)) {
-				//surprise hit: bias the roll towards the high end
+				//surprise hit: bias the roll towards the high end, and add bonus per charge layer
 				int lvl = buffedLvl();
 				int mn = min(lvl);
 				int mx = max(lvl);
 				int diff = mx - mn;
-				int biasedMin = mn + Math.round(diff * ambushRate);
+				int biasedMin = mn + Math.round(diff * AMBUSH_RATE);
 				if (biasedMin > mx) biasedMin = mx;
 
 				int damage = Random.NormalIntRange(biasedMin, mx);
+				damage += charge * AMBUSH_DMG_PER_CHARGE; //伏击层数越高，本武器突袭越痛
 				damage = augment.damageFactor(damage);
 				int exStr = hero.STR() - STRReq();
 				if (exStr > 0) {
@@ -132,7 +150,7 @@ public class PhantomKnife extends MeleeWeapon {
 	private static final String CHARGE_CAP = "chargeCap";
 
 	private int charge = 0;
-	private int chargeCap = 10;
+	private int chargeCap = 9; //基础上限 9 = 3 次召唤（每次耗 1/3）
 
 	@Override
 	public String name() {
@@ -149,23 +167,52 @@ public class PhantomKnife extends MeleeWeapon {
 		return sb.toString();
 	}
 
+	private static final String AC_SUMMON = "SUMMON";
+
+	@Override
+	public ArrayList<String> actions(Hero hero) {
+		ArrayList<String> actions = super.actions(hero);
+		actions.add(AC_SUMMON);
+		return actions;
+	}
+
+	@Override
+	public void execute(Hero hero, String action) {
+		super.execute(hero, action);
+		if (!AC_SUMMON.equals(action) || Dungeon.hero == null) return;
+
+		if (charge < summonCost()) {
+			GLog.w(Messages.get(this, "not_enough", summonCost()));
+			return;
+		}
+
+		GameScene.selectCell(new CellSelector.Listener() {
+			@Override
+			public void onSelect(Integer target) {
+				if (target == null) return;
+				Char ch = Actor.findChar(target);
+				if (ch == null || !ch.isAlive() || ch.alignment != Char.Alignment.ENEMY) {
+					GLog.w(Messages.get(PhantomKnife.this, "no_target"));
+					return;
+				}
+				summonAt(hero, ch);
+			}
+
+			@Override
+			public String prompt() {
+				return Messages.get(PhantomKnife.this, "prompt");
+			}
+		});
+	}
+
 	@Override
 	public int proc(Char attacker, Char defender, int damage) {
 		damage = super.proc(attacker, defender, damage);
 
+		//伏击充能：突袭命中敌人即 +1 层
 		if (attacker instanceof Hero && defender instanceof Mob) {
-			Hero hero = (Hero) attacker;
-			Mob mob = (Mob) defender;
-
-			boolean isAmbush = mob.surprisedBy(hero);
-			boolean willKill = mob.HP <= damage;
-
-			//充能循环：击杀即充能（偷袭击杀翻倍）→ 蓄积的点数在偷袭命中未杀时花 1 点召影仆；
-			//影仆击杀返还 1 点（见 SummonedMinion.attack），使普通战斗也能持续供养召唤流。
-			if (willKill) {
-				gainCharge(isAmbush ? 2 : 1);
-			} else if (isAmbush && charge > 0) {
-				trySummonAndAttack(hero, mob);
+			if (((Mob) defender).surprisedBy((Hero) attacker)) {
+				gainCharge(CHARGE_PER_AMBUSH);
 			}
 		}
 
@@ -183,15 +230,16 @@ public class PhantomKnife extends MeleeWeapon {
 		}
 	}
 
-	private void trySummonAndAttack(Hero hero, Char enemy) {
+	/** 在指定敌人身旁召唤影仆并扣除充能；影仆强度按召唤瞬间的伏击层数结算。 */
+	private void summonAt(Hero hero, Char enemy) {
 		int summonPos = findNearbyEmptyCell(enemy.pos);
 		if (summonPos == -1) {
+			GLog.w(Messages.get(this, "no_space"));
 			return;
 		}
 
 		int basePower = tier * 2;
-		int chargePower = Math.min(charge, chargeCap);
-		int powerLevel = basePower + chargePower + level(); //随武器强化成长
+		int powerLevel = basePower + charge + level(); //伏击层数（含本次消耗前）+ 武器强化
 
 		SummonedMinion minion = new SummonedMinion(this, powerLevel, tier);
 		minion.pos = summonPos;
@@ -203,7 +251,7 @@ public class PhantomKnife extends MeleeWeapon {
 		CellEmitter.get(summonPos).burst(Speck.factory(Speck.STAR), 6);
 		Sample.INSTANCE.play(Assets.Sounds.MELD);
 
-		charge--;
+		charge -= summonCost();
 		updateQuickslot();
 
 		GLog.p(Messages.get(this, "msg_summoned", minion.name()));
@@ -236,17 +284,16 @@ public class PhantomKnife extends MeleeWeapon {
 
 	@Override
 	public Item upgrade() {
-		chargeCap += 2;
-		if (chargeCap > 20) chargeCap = 20;
+		chargeCap += SUMMON_FRACTION; //上限 +3，保证任意等级满充都能连召三次
+		if (chargeCap > 15) chargeCap = 15;
 		return super.upgrade();
 	}
 
 	public PhantomKnife randomize() {
 		tier = 1;
 		level(Random.IntRange(0, 3));
-		chargeCap = Random.IntRange(8, 20);
-		charge = Random.IntRange(0, chargeCap);
-		ambushRate = Random.Float(0.4f, 1.2f);
+		chargeCap = 9 + SUMMON_FRACTION * Random.IntRange(0, 2); //9 / 12 / 15，均为 3 的倍数
+		charge = 0;
 		return this;
 	}
 
@@ -267,7 +314,7 @@ public class PhantomKnife extends MeleeWeapon {
 		super.restoreFromBundle(bundle);
 		charge = bundle.getInt(CHARGE);
 		chargeCap = bundle.getInt(CHARGE_CAP);
-		if (chargeCap == 0) chargeCap = 10;
+		if (chargeCap == 0) chargeCap = 9;
 	}
 
 	public static class SummonedMinion extends Mob {

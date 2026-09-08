@@ -187,7 +187,7 @@ public abstract class Char extends Actor {
 	protected final boolean act() {
 		//three-phase turn: propose -> adjudicate -> execute
 		ActionSubmission sub = proposeAction();
-		ActionResult result = Actor.midAction( this, sub );
+		ActionSubmission.ActionResult result = Actor.midAction( this, sub );
 		return doAction( sub, result );
 	}
 
@@ -201,14 +201,14 @@ public abstract class Char extends Actor {
 
 	//adjudicates a proposal: only re-checks that what was valid at proposal time
 	//is still valid now. unknown action names pass through as OK, by design.
-	protected ActionResult adjudicate( ActionSubmission sub ) {
-		return ActionResult.OK;
+	protected ActionSubmission.ActionResult adjudicate( ActionSubmission sub ) {
+		return ActionSubmission.ActionResult.OK;
 	}
 
 	//executes a proposal (OK) or handles its failure (Fail).
 	//returns true to have Actor.process immediately pick the next actor,
 	//false to park the actor thread (matching the old boolean act() contract).
-	protected boolean doAction( ActionSubmission sub, ActionResult result ) {
+	protected boolean doAction( ActionSubmission sub, ActionSubmission.ActionResult result ) {
 		return false;
 	}
 

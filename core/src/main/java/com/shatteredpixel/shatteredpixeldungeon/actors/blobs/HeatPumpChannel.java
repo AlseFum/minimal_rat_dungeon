@@ -25,8 +25,9 @@ import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
-import com.shatteredpixel.shatteredpixeldungeon.sprites.MapDeviceSprite;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
+import com.watabou.gltextures.TextureCache;
+import com.watabou.noosa.Image;
 import com.watabou.utils.Bundle;
 
 import java.util.HashMap;
@@ -53,7 +54,7 @@ public class HeatPumpChannel extends Blob implements Hero.Doom {
 	private int ventTimer = VENT_INTERVAL;
 
 	//fixed per-cell visuals
-	private HashMap<Integer, MapDeviceSprite> sprites = new HashMap<>();
+	private HashMap<Integer, HeatPumpSprite> sprites = new HashMap<>();
 
 	@Override
 	protected void onAdd() {
@@ -64,7 +65,7 @@ public class HeatPumpChannel extends Blob implements Hero.Doom {
 	@Override
 	protected void onRemove() {
 		super.onRemove();
-		for (MapDeviceSprite s : sprites.values()) {
+		for (HeatPumpSprite s : sprites.values()) {
 			s.killAndErase();
 		}
 		sprites.clear();
@@ -114,13 +115,30 @@ public class HeatPumpChannel extends Blob implements Hero.Doom {
 		}
 	}
 
+	/**
+	 * 每格的热泵插图：heatpump.png 缩小至单格 16x16。
+	 * 图内若含多帧，暂按整图平铺（tint 阶段色仍可区分 idle/primed/venting）。
+	 */
+	private static class HeatPumpSprite extends Image {
+		HeatPumpSprite() {
+			super(TextureCache.get("effects/heatpump.png"));
+			scale.set(16f / width(), 16f / height());
+		}
+
+		void place(int cell) {
+			int w = Dungeon.level.width();
+			x = (cell % w) * 16f;
+			y = (cell / w) * 16f;
+		}
+	}
+
 	//keeps a fixed tile sprite in sync with the covered cells
 	private void updateSprites() {
 		for (int cell = 0; cell < cur.length; cell++) {
-			MapDeviceSprite s = sprites.get(cell);
+			HeatPumpSprite s = sprites.get(cell);
 			if (cur[cell] > 0) {
 				if (s == null) {
-					s = new MapDeviceSprite();
+					s = new HeatPumpSprite();
 					s.place(cell);
 					sprites.put(cell, s);
 				}
@@ -146,7 +164,7 @@ public class HeatPumpChannel extends Blob implements Hero.Doom {
 		} else {
 			color = PRIMED_COLOR;
 		}
-		for (MapDeviceSprite s : sprites.values()) {
+		for (HeatPumpSprite s : sprites.values()) {
 			s.hardlight(color);
 		}
 	}

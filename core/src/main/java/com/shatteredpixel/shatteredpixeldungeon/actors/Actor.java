@@ -246,8 +246,8 @@ public abstract class Actor implements Bundlable {
 
 	//adjudicates a Char's proposed action before it is executed.
 	//only re-checks that what was valid at proposal time is still valid now.
-	public static ActionResult midAction( Char ch, ActionSubmission sub ){
-		ActionResult result = ch.adjudicate( sub );
+	public static ActionSubmission.ActionResult midAction( Char ch, ActionSubmission sub ){
+		ActionSubmission.ActionResult result = ch.adjudicate( sub );
 
 		//global rules, applied to every char regardless of type
 		if (result.isOk() && sub.name == ActionSubmission.ATTACK){
@@ -255,7 +255,7 @@ public abstract class Actor implements Bundlable {
 			if (target != null && target.buff( FrostAura.class ) != null){
 				//attacks against a frost aura fail, and chill the attacker
 				Buff.prolong( ch, Chill.class, FrostAura.CHILL_DURATION );
-				return ActionResult.fail( FailCause.FROST_AURA );
+				return ActionSubmission.ActionResult.fail( FailCause.FROST_AURA );
 			}
 		}
 

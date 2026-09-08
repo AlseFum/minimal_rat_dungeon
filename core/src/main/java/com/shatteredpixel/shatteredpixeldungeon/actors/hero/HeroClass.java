@@ -50,8 +50,6 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.warrior.He
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.warrior.Shockwave;
 import com.shatteredpixel.shatteredpixeldungeon.items.BrokenSeal;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
-import com.shatteredpixel.shatteredpixeldungeon.items.KingsCrown;
-import com.shatteredpixel.shatteredpixeldungeon.items.TengusMask;
 import com.shatteredpixel.shatteredpixeldungeon.items.Waterskin;
 import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.CloakOfShadows;
@@ -336,10 +334,8 @@ public abstract class HeroClass {
 
 		initClassSpecific( hero );
 
-		if (Dungeon.mode == Dungeon.Mode.DEMO) {
+		if (Dungeon.mode == Dungeon.Mode.NORMAL) {
 			hero.initializeShowcaseStats();
-			new TengusMask().collect();
-			new KingsCrown().collect();
 		}
 		if (DeviceCompat.isDebug()) {
 			DebugBag.install();

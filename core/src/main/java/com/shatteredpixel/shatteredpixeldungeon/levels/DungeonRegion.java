@@ -162,7 +162,7 @@ public abstract class DungeonRegion {
 		register(new ChapVIIRegion());
 		register(new DungeonRegion() {
 			public String id() { return "sewers"; }
-			public float weight() { return Dungeon.mode == Dungeon.Mode.DEMO && Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 1 : 0; }
+			public float weight() { return Dungeon.mode == Dungeon.Mode.NORMAL && Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 1 : 0; }
 			protected Level constructLevel() {
 				Level level = isBossLevel() ? new SewerBossLevel() : new SewerLevel();
 				level.regionId = id();
@@ -238,11 +238,21 @@ public abstract class DungeonRegion {
 		});
 		register(new DungeonRegion() {
 			public String id() { return "finale"; }
-			public float weight() { return Dungeon.mode == Dungeon.Mode.DEMO && Dungeon.depth == 6 && Dungeon.branch == 63 ? 1 : 0; }
+			public float weight() { return Dungeon.mode == Dungeon.Mode.NORMAL && Dungeon.depth == 6 && Dungeon.branch == 63 ? 1 : 0; }
 			protected Level constructLevel() {
 				Level level = new LastLevel();
 				level.regionId = id();
 				return level;
+			}
+			//finale 入口默认 dest 为 (depth-1, branch=63) 无对应区域：指回 (5,0) 下水道出口，
+			//避免拿护符后走入口 resolve 崩溃；也作无尽续潜的返回路径
+			public void configureLevel(Level level) {
+				LevelTransition entry = level.getTransition(LevelTransition.Type.REGULAR_ENTRANCE);
+				if (entry != null) {
+					entry.destDepth = Dungeon.depth - 1;
+					entry.destBranch = 0;
+					entry.destType = LevelTransition.Type.REGULAR_EXIT;
+				}
 			}
 		});
 	}

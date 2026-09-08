@@ -102,7 +102,7 @@ public class HeroSelectScene extends PixelScene {
 		super.create();
 
 		Dungeon.hero = null;
-		Dungeon.mode = Dungeon.Mode.DEMO;
+		Dungeon.mode = Dungeon.Mode.NORMAL;
 
 		Badges.loadGlobal();
 		Journal.loadGlobal();
@@ -637,16 +637,19 @@ public class HeroSelectScene extends PixelScene {
 
 			buttons = new ArrayList<>();
 			spacers = new ArrayList<>();
-			StyledButton infiniteButton = new StyledButton(Chrome.Type.BLANK, Messages.get(HeroSelectScene.class, "infinite"), 6){
+			//Boss Rush 未实装：置灰占位，点击提示（NORMAL 为当前默认常规流程）
+			StyledButton bossRushButton = new StyledButton(Chrome.Type.BLANK, Messages.get(HeroSelectScene.class, "bossrush"), 6){
 				@Override protected void onClick() {
-					Dungeon.mode = Dungeon.mode == Dungeon.Mode.INFINITE ? Dungeon.Mode.DEMO : Dungeon.Mode.INFINITE;
-					icon(Icons.get(Dungeon.mode == Dungeon.Mode.INFINITE ? Icons.CHECKED : Icons.UNCHECKED));
+					ShatteredPixelDungeon.scene().addToFront( new WndMessage(
+							Messages.get(HeroSelectScene.class, "bossrush_unavailable")));
 				}
 			};
-			infiniteButton.leftJustify = true;
-			infiniteButton.icon(Icons.get(Icons.UNCHECKED));
-			add(infiniteButton);
-			buttons.add(infiniteButton);
+			bossRushButton.leftJustify = true;
+			bossRushButton.textColor(0x777777);
+			bossRushButton.icon(Icons.get(Icons.UNCHECKED));
+			bossRushButton.icon().alpha(0.5f);
+			add(bossRushButton);
+			buttons.add(bossRushButton);
 			StyledButton seedButton = new StyledButton(Chrome.Type.BLANK, Messages.get(HeroSelectScene.class, "custom_seed"), 6){
 				@Override
 				protected void onClick() {

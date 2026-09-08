@@ -82,8 +82,12 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class Dungeon {
-	public enum Mode { DEMO, INFINITE }
-	public static Mode mode = Mode.DEMO;
+	public enum Mode {
+		NORMAL,     //常规流程：5 层下水道 + LastLevel 终章
+		BOSSRUSH,   //未实装：选角界面置灰
+		INFINITE    //内部值：取得护符后经 AmuletScene 进入，仅无尽下潜使用
+	}
+	public static Mode mode = Mode.NORMAL;
 
 	//enum of items which have limited spawns, records how many have spawned
 	//could all be their own separate numbers, but this allows iterating, much nicer for bundling/initializing.
@@ -711,7 +715,16 @@ public class Dungeon {
 		
 		depth = bundle.getInt( DEPTH );
 		branch = bundle.getInt( BRANCH );
-		mode = bundle.contains(MODE) ? Mode.valueOf(bundle.getString(MODE)) : Mode.DEMO;
+		//旧版存档 mode 为 "DEMO"（现枚举已改名 NORMAL），valueOf 抛异常则回退 NORMAL；BOSSRUSH/INFINITE 直接透传
+		if (bundle.contains(MODE)) {
+			try {
+				mode = Mode.valueOf(bundle.getString(MODE));
+			} catch (IllegalArgumentException e) {
+				mode = Mode.NORMAL;
+			}
+		} else {
+			mode = Mode.NORMAL;
+		}
 
 		gold = bundle.getInt( GOLD );
 		energy = bundle.getInt( ENERGY );
@@ -769,6 +782,11 @@ public class Dungeon {
 	
 	public static void fail( Object cause ) {
 		if (WndResurrect.instance == null) {
+			//无尽期（已取得护符后）死亡视为通关：按胜利结算，跳过失败记录
+			if (mode == Mode.INFINITE && Statistics.amuletObtained) {
+				if (!Statistics.gameWon) win(cause); //幂等：一次死亡只产生一条金色记录
+				return;
+			}
 			updateLevelExplored();
 			Statistics.gameWon = false;
 			Rankings.INSTANCE.submit( false, cause );

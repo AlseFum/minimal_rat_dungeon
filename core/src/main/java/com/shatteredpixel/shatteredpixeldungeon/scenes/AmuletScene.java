@@ -110,7 +110,9 @@ public class AmuletScene extends PixelScene {
 		btnExit.setSize( WIDTH, BTN_HEIGHT );
 		add( btnExit );
 		
-		btnStay = new StyledButton(Chrome.Type.GREY_BUTTON_TR, Messages.get(this, "stay") ) {
+		boolean endless = Dungeon.mode == Dungeon.Mode.INFINITE;
+		btnStay = new StyledButton(Chrome.Type.GREY_BUTTON_TR,
+				Messages.get(this, endless ? "stay_infinite" : "stay_endless") ) {
 			@Override
 			protected void onClick() {
 				onBackPressed();
@@ -118,7 +120,7 @@ public class AmuletScene extends PixelScene {
 				btnStay.enable(false);
 			}
 		};
-		btnStay.icon(Icons.CLOSE.get());
+		btnStay.icon(endless ? Icons.get(Icons.ENTER) : Icons.CLOSE.get());
 		btnStay.setSize( WIDTH, BTN_HEIGHT );
 		add( btnStay );
 
@@ -160,6 +162,10 @@ public class AmuletScene extends PixelScene {
 	@Override
 	protected void onBackPressed() {
 		if (btnExit.isActive()) {
+			//NORMAL 终章按"留下"即进入无尽模式：先切换模式，再统一走无尽续潜逻辑
+			if (Dungeon.mode == Dungeon.Mode.NORMAL) {
+				Dungeon.mode = Dungeon.Mode.INFINITE;
+			}
 			if (Dungeon.mode == Dungeon.Mode.INFINITE) {
 				Dungeon.generatedLevels.remove((Integer)(Dungeon.depth + 1000 * 0));
 				FileUtils.deleteFile(GamesInProgress.depthFile(
@@ -170,11 +176,10 @@ public class AmuletScene extends PixelScene {
 						Dungeon.depth, 0,
 						com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition.Type.REGULAR_ENTRANCE);
 				InterlevelScene.mode = InterlevelScene.Mode.DESCEND;
-				Game.switchScene(InterlevelScene.class);
 			} else {
 				InterlevelScene.mode = InterlevelScene.Mode.CONTINUE;
 			}
-			if (Dungeon.mode != Dungeon.Mode.INFINITE) Game.switchScene(InterlevelScene.class);
+			Game.switchScene(InterlevelScene.class);
 		}
 	}
 	

@@ -2376,25 +2376,56 @@ public class Hero extends Char {
 	}
 	
 	public static void reallyDie( Object cause ) {
-		
+
 		int length = Dungeon.level.length();
 		int[] map = Dungeon.level.map;
 		boolean[] visited = Dungeon.level.visited;
 		boolean[] discoverable = Dungeon.level.discoverable;
-		
+
 		for (int i=0; i < length; i++) {
-			
+
 			int terr = map[i];
-			
+
 			if (discoverable[i]) {
-				
+
 				visited[i] = true;
 				if ((Terrain.flags[terr] & Terrain.SECRET) != 0) {
 					Dungeon.level.discover( i );
 				}
 			}
 		}
-		
+
+		//无尽期（已取得护符后）死亡 = 通关：不遗骨、不散落、不走失败演出，
+		//直接按胜利结算进排行榜（胜利记录已由 Dungeon.fail→win 提交，见 Dungeon.java）
+		if (Dungeon.mode == Dungeon.Mode.INFINITE && Statistics.amuletObtained) {
+			Game.runOnRenderThread(new Callback() {
+				@Override
+				public void call() {
+					if (!com.shatteredpixel.shatteredpixeldungeon.Statistics.gameWon) {
+						//兜底：Doom 类死因的 fail 位于 reallyDie 尾部的 Doom.onDeath，
+						//被本分支跳过，这里补提交胜利记录
+						Dungeon.win(com.shatteredpixel.shatteredpixeldungeon.items.Amulet.class);
+					}
+					//两条路径都需确保 VICTORY 徽章发放并持久化（主路径 fail→win 不发徽章）
+					com.shatteredpixel.shatteredpixeldungeon.Badges.validateVictory();
+					com.shatteredpixel.shatteredpixeldungeon.Badges.saveGlobal();
+					Dungeon.deleteGame(GamesInProgress.curSlot, true);
+					//等徽章横幅展示完再进排行榜（镜像 AmuletScene.btnExit）
+					if (com.shatteredpixel.shatteredpixeldungeon.effects.BadgeBanner.isShowingBadges()) {
+						Game.scene().add(new com.watabou.noosa.tweeners.Delayer(3f) {
+							@Override
+							protected void onComplete() {
+								Game.switchScene(com.shatteredpixel.shatteredpixeldungeon.scenes.RankingsScene.class);
+							}
+						});
+					} else {
+						Game.switchScene(com.shatteredpixel.shatteredpixeldungeon.scenes.RankingsScene.class);
+					}
+				}
+			});
+			return;
+		}
+
 		Bones.leave();
 		
 		Dungeon.observe();

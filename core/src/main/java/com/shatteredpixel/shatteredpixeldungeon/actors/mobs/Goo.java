@@ -303,7 +303,6 @@ public class Goo extends Mob {
 		}
 
 		// 王冠/面具已移出掉落池：boss 层通关（Goo 死亡）时若背包没有则直接发放。
-		// DEMO 开局已白送（HeroClass.initHero），此处 no-op；INFINITE 首次击杀补齐。
 		if (Dungeon.hero != null && Dungeon.hero.belongings != null && Dungeon.hero.isAlive()) {
 			if (Dungeon.hero.belongings.getItem(TengusMask.class) == null) {
 				new TengusMask().collect();

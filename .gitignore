@@ -22,3 +22,5 @@ local.properties
 # IDE build output (Eclipse-style bin dirs)
 bin/
 build/
+
+.vscode/

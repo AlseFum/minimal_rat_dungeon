@@ -33,19 +33,9 @@ import com.watabou.utils.PlatformSupport;
 
 public class ShatteredPixelDungeon extends Game {
 
-	//rankings from v1.2.3 and older use a different score formula, so this reference is kept
-	public static final int v1_2_3 = 628;
-
-	//savegames from versions older than v2.5.4 are no longer supported, and data from them is ignored
-	public static final int v2_5_4 = 802;
-
-	public static final int v3_0_2 = 833;
-	public static final int v3_1_1 = 850;
-	public static final int v3_2_5 = 877;
-	public static final int v3_3_0 = 883;
-
-	//talent-layer 存档格式（talent_layers + 层 id 字符串）；旧档作废
-	public static final int v3_4_0 = 900;
+	//本作存档格式基准。此前所有上游版本的存档一律不兼容，直接作废，
+	//所以不再保留 v1_2_3/v2_5_4/v3_x 这些版本号。
+	public static final int v0_0_1 = 1;
 	
 	public ShatteredPixelDungeon( PlatformSupport platform ) {
 		super( sceneClass == null ? WelcomeScene.class : sceneClass, platform );

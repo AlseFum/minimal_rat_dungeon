@@ -1,6 +1,8 @@
 package com.shatteredpixel.shatteredpixeldungeon.levels;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+//实验性内容统一放在 experimental 包下，整块迁走时删掉这一行与下面的 register 即可
+import com.shatteredpixel.shatteredpixeldungeon.experimental.chapinit.ChapInitRegion;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.MossyClump;
 import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.TrapMechanism;
 import com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition;
@@ -160,6 +162,7 @@ public abstract class DungeonRegion {
 		register(new ChapVRegion());
 		register(new ChapVIRegion());
 		register(new ChapVIIRegion());
+		register(new ChapInitRegion());
 		register(new DungeonRegion() {
 			public String id() { return "sewers"; }
 			public float weight() { return Dungeon.mode == Dungeon.Mode.NORMAL && Dungeon.branch == 0 && Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 1 : 0; }

@@ -1,3 +1,7 @@
 {
-    "java.configuration.updateBuildConfiguration": "disabled"
+    "java.configuration.updateBuildConfiguration": "disabled",
+    // 让 Java/Gradle 语言服务器使用项目 wrapper（9.7.0），而不是自带的旧 Gradle 8.9，
+    // 否则 :android 模块（AGP 9.3.1 要求 Gradle >= 9.5）会在配置阶段失败。
+    "java.import.gradle.wrapper.enabled": true,
+    "java.import.gradle.version": ""
 }

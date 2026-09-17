@@ -55,10 +55,10 @@ public class OriginiumSlugAgile extends Mob {
 		return Loot.randomUsingDefaults(Loot.SEED);
 	}
 
-	//TODO 换正式立绘（迅捷型甲虫），tint 仅为区分占位图
-	public static class Sprite extends PortedPlaceholderMobSprite {
+	/** 同款甲虫，肚子是红色的（namsek 的 bug_a.png），帧分组与源石虫一致 */
+	public static class Sprite extends BugSprite {
 		public Sprite() {
-			super(0xA0C8A050);
+			super("sprites/namsek/OriginiumSlugAgile.png", 0.5f);
 		}
 	}
 }

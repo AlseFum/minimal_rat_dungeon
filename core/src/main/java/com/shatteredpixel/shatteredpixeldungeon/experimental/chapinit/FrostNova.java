@@ -138,10 +138,9 @@ public class FrostNova extends Mob {
 		turnsToPulse = bundle.getInt(TURNS_TO_PULSE);
 	}
 
-	//TODO 换正式立绘，tint 仅为区分占位图
-	public static class Sprite extends PortedPlaceholderMobSprite {
+	public static class Sprite extends FrostNovaSprite {
 		public Sprite() {
-			super(0xA040FFFF);
+			super();
 		}
 	}
 }

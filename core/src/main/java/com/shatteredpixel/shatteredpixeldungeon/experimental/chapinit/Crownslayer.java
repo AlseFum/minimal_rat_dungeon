@@ -13,13 +13,18 @@
 
 package com.shatteredpixel.shatteredpixeldungeon.experimental.chapinit;
 
+import com.shatteredpixel.shatteredpixeldungeon.Assets;
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
+import com.shatteredpixel.shatteredpixeldungeon.actors.ActionSubmission;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
+import com.shatteredpixel.shatteredpixeldungeon.effects.CellEmitter;
+import com.shatteredpixel.shatteredpixeldungeon.effects.Speck;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
 import com.shatteredpixel.shatteredpixeldungeon.items.Loot;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation;
+import com.watabou.noosa.audio.Sample;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
 
@@ -37,8 +42,8 @@ import java.util.ArrayList;
  */
 public class Crownslayer extends Mob {
 
-	/** 超过这个距离就穿梭，而不是一步步走 */
-	private static final int BLINK_RANGE = 4;
+	/** 超过这个距离就穿梭，而不是一步步走（贴到 2 格内才收手） */
+	private static final int BLINK_RANGE = 2;
 	/** 穿梭落点与目标的距离上限 */
 	private static final int BLINK_LANDING = 2;
 
@@ -78,19 +83,63 @@ public class Crownslayer extends Mob {
 
 	// ==================== 穿梭 ====================
 
+	/**
+	 * 穿梭作为一个独立回合动作：盯上目标且距离超过 {@link #BLINK_RANGE} 时直接跳过去，
+	 * 这一回合不再移动/攻击。
+	 *
+	 * 不挂在 getCloser() 上——那条路只在状态机提议的落点也离得远时才走到，
+	 * 实机几乎不会触发（怪一边走一边靠近，等发现玩家时已经在 4 格内了）。
+	 */
 	@Override
-	protected boolean getCloser(int target) {
-		//沉默（被拉拽）时不能穿梭，只能正常走路
-		if (buff(Silence.class) == null
-				&& Dungeon.level.distance(pos, target) > BLINK_RANGE
-				&& blinkNear(target)) {
-			return true;
+	protected ActionSubmission proposeAction() {
+
+		if (tryBlink()) {
+			//穿梭占掉这一整回合（IDLE 在提议阶段就付清整回合）
+			return ActionSubmission.idle();
 		}
-		return super.getCloser(target);
+
+		return super.proposeAction();
 	}
 
-	/** 传送到目标附近的空格；找不到落点就返回 false，退回普通移动 */
-	private boolean blinkNear(int target) {
+	private boolean tryBlink() {
+
+		//受到拖拉被沉默时不能穿梭
+		if (buff(Silence.class) != null) return false;
+
+		//用当前视野判断，避免依赖上一回合的状态机结论
+		updateFovAndThrowItems();
+
+		Char prey = (enemy != null && enemy.isAlive() && Actor.chars().contains(enemy))
+				? enemy : chooseEnemy();
+		if (prey == null || !prey.isAlive() || !fieldOfView[prey.pos]) return false;
+
+		if (Dungeon.level.distance(pos, prey.pos) <= BLINK_RANGE) return false;
+
+		int landing = findLanding(prey.pos);
+		if (landing == -1) return false;
+
+		//直接换格：落点要求可通行即可，因此不会去开门，也就绕开了门后的伏击
+		int oldPos = pos;
+		pos = landing;
+		moveSprite(oldPos, pos);
+
+		//两端各给一点特效，不然看起来只是"瞬移了一下"
+		if (Dungeon.level.heroFOV[oldPos]) {
+			CellEmitter.get(oldPos).burst(Speck.factory(Speck.LIGHT), 6);
+		}
+		if (Dungeon.level.heroFOV[landing]) {
+			CellEmitter.get(landing).burst(Speck.factory(Speck.LIGHT), 6);
+		}
+		if (Dungeon.level.heroFOV[oldPos] || Dungeon.level.heroFOV[landing]) {
+			Sample.INSTANCE.play(Assets.Sounds.TELEPORT);
+		}
+
+		spend(TICK);
+		return true;
+	}
+
+	/** 目标附近的空格；找不到返回 -1 */
+	private int findLanding(int target) {
 
 		boolean[] passable = Dungeon.level.passable.clone();
 		PathFinder.buildDistanceMap(target, passable, BLINK_LANDING);
@@ -106,16 +155,12 @@ public class Crownslayer extends Mob {
 			}
 		}
 
-		if (candidates.isEmpty()) return false;
-
-		pos = Random.element(candidates);
-		return true;
+		return candidates.isEmpty() ? -1 : Random.element(candidates);
 	}
 
-	//TODO 换正式立绘，tint 仅为区分占位图
-	public static class Sprite extends PortedPlaceholderMobSprite {
+	public static class Sprite extends CrownSlayerSprite {
 		public Sprite() {
-			super(0xA04040FF);
+			super();
 		}
 	}
 }

@@ -47,10 +47,9 @@ public class OriginiumSlug extends Mob {
 		return super.drRoll() + Random.NormalIntRange(0, 1);
 	}
 
-	//TODO 换正式立绘（甲虫），tint 仅为区分占位图
-	public static class Sprite extends PortedPlaceholderMobSprite {
+	public static class Sprite extends BugSprite {
 		public Sprite() {
-			super(0xA0AA8844);
+			super("sprites/namsek/OriginiumSlug.png", 0.5f);
 		}
 	}
 }

@@ -143,10 +143,9 @@ public class Centurion extends Mob {
 				.solidDamage(Random.NormalIntRange(CAST_MIN, CAST_MAX)));
 	}
 
-	//TODO 换正式立绘，tint 仅为区分占位图
-	public static class Sprite extends PortedPlaceholderMobSprite {
+	public static class Sprite extends SarkazCenturionSprite {
 		public Sprite() {
-			super(0xA08000C0);
+			super();
 		}
 	}
 }

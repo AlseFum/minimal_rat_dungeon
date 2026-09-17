@@ -41,7 +41,7 @@ public class ChapInitRegion extends DungeonRegion {
 		//只作为常规流程的起始章节；无尽模式的第 5 层另有自己的 BOSS 节奏，不参与竞争
 		return Dungeon.mode == Dungeon.Mode.NORMAL
 				&& Dungeon.branch == 0
-				&& Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 10 : 0;
+				&& Dungeon.depth >= 1 && Dungeon.depth <= 5 ? 100 : 0;
 	}
 
 	@Override
@@ -76,10 +76,5 @@ public class ChapInitRegion extends DungeonRegion {
 			//回合数与触发状态随存档往返。Actor 注册由后续的 Actor.init() 完成。
 			level.addEntity(new StarterLayer4Event(), 0);
 		}
-	}
-
-	@Override
-	public String enterMessage() {
-		return Messages.get(this, "enter");
 	}
 }

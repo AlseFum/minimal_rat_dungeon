@@ -28,7 +28,7 @@ import com.watabou.utils.RectF;
  */
 public class PortedPlaceholderMobSprite extends MobSprite {
 
-	private static final String PLACEHOLDER_TEX = "sprites/ported/infantry.png";
+	private static final String PLACEHOLDER_TEX = "sprites/namsek/Infantry.png";
 	private static final int FRAME_SIZE = 32;
 	/** 单帧 32x32 挤进地图格的比例（0.5 = 16px） */
 	private static final float TILE_SCALE = 0.5f;

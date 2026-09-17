@@ -91,7 +91,7 @@ public class Infantry extends Mob {
 		public InfantrySprite() {
 			super();
 
-			texture("sprites/ported/infantry.png");
+			texture("sprites/namsek/Infantry.png");
 			//800x32 = 25 个 32x32 帧，帧序号沿用 ZootDungeon 原值
 			TextureFilm frames = new TextureFilm(texture, 32, 32);
 

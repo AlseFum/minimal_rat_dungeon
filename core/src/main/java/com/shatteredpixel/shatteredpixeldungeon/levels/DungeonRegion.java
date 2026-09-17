@@ -82,6 +82,14 @@ public abstract class DungeonRegion {
 	}
 
 	/**
+	 * 进入信息是否用不阻挡操作的浮层显示（默认只在日志里播报一行）。
+	 * 见 experimental.chapinit.EnterNotice。
+	 */
+	public boolean enterMessageAsNotice() {
+		return false;
+	}
+
+	/**
 	 * Picks up to {@code count} random open cells (passable, no mob, trap or
 	 * entity), each at least {@code minDist} tiles away from the others.
 	 * Returns fewer when the level does not have enough open space.

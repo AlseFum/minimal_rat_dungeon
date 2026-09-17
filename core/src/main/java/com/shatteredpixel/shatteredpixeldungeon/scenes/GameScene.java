@@ -42,6 +42,8 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.HeroClass;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Talent;
 import com.shatteredpixel.shatteredpixeldungeon.actors.mobs.Mob;
 import com.shatteredpixel.shatteredpixeldungeon.effects.BannerSprites;
+//实验性内容统一放在 experimental 包下，整块迁走时删掉这一行
+import com.shatteredpixel.shatteredpixeldungeon.experimental.chapinit.EnterNotice;
 import com.shatteredpixel.shatteredpixeldungeon.effects.BlobEmitter;
 import com.shatteredpixel.shatteredpixeldungeon.effects.EmoIcon;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Flare;
@@ -624,7 +626,12 @@ public class GameScene extends PixelScene {
 			//announce the region's entry message, if it has one
 			DungeonRegion region = DungeonRegion.find(Dungeon.level.regionId);
 			if (region != null && region.enterMessage() != null) {
-				GLog.w(region.enterMessage());
+				if (region.enterMessageAsNotice()) {
+					//实验性：不阻挡操作的浮层（见 experimental.chapinit.EnterNotice）
+					addToFront(new EnterNotice(region.enterMessage()));
+				} else {
+					GLog.w(region.enterMessage());
+				}
 			}
 
 			if (Dungeon.hero.hasTalent(Talent.ROGUES_FORESIGHT)

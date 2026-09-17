@@ -77,4 +77,15 @@ public class ChapInitRegion extends DungeonRegion {
 			level.addEntity(new StarterLayer4Event(), 0);
 		}
 	}
+
+	@Override
+	public String enterMessage() {
+		return Messages.get(this, "enter");
+	}
+
+	/** 用不阻挡操作的浮层显示进入信息，而不是刷一行日志（见 {@link EnterNotice}） */
+	@Override
+	public boolean enterMessageAsNotice() {
+		return true;
+	}
 }

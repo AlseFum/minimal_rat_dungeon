@@ -354,7 +354,8 @@ public class Loot {
 			of("WEAPON").classes = new Class<?>[]{};
 			deck("WEAPON").probs = new float[]{};
 			
-			//一般武器池（Dagger 虽为盗贼开局武亦入池；Sword 通用剑入池作"普通武器"位；
+			//一般武器池（英雄开局武已全部移入 items.weapon.hero 且不入池：
+			//盗贼开局改用 WornDagger，Dagger 本体转为纯池武器；Sword 通用剑作"普通武器"位入池；
 			//Crossbow 属远程弹药系武器，仅在平铺池稀有掉落，不入此 deck）。浮动强度见 randomWeapon/floatingTier。
 			of("WEP_T1").classes = new Class<?>[]{
 					Spear.class,

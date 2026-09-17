@@ -49,6 +49,7 @@ import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.abilities.Ratmogrify;
 import com.shatteredpixel.shatteredpixeldungeon.effects.Pushing;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.items.food.MysteryMeat;
 import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAggression;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTeleportation;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Ballistica;
@@ -56,6 +57,7 @@ import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.CharSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.RatSprite;
+import com.watabou.utils.BArray;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.PathFinder;
 import com.watabou.utils.Random;
@@ -99,7 +101,8 @@ public class Rat extends Mob {
 		CHARMER(23, 1, 0.95f, 0.90f, 2, 2, 0, 0xFF99CC),
 		DEATH_RAY(24, 1, 1.10f, 1.20f, 2, 0, 1, 0xCC66FF),
 		AMBUSH(25, 1, 1.00f, 1.15f, 1, 2, 1, 0xAA8855),
-		WATER_HUNTER(26, 1, 1.00f, 1.10f, 2, 2, 0, 0x44AAFF),
+		//水栖变种不进随机池（权重 0）：它只在 AquariumRoom 里被放进水里，照原版食人鱼
+		WATER_HUNTER(26, 0, 1.00f, 1.10f, 2, 2, 0, 0x44AAFF),
 		STENCH(27, 1, 1.15f, 0.85f, 0, 0, 1, 0x77AA55),
 		TRICKSTER(28, 1, 0.90f, 1.00f, 3, 4, 0, 0xDD8844),
 		CRYSTAL(29, 1, 1.10f, 1.05f, 2, 2, 2, 0x88EEFF),
@@ -253,6 +256,18 @@ public class Rat extends Mob {
 		defenseSkill = Math.min(stats.defenseCap, Math.max(0, stats.defense + variant.defenseBonus));
 		armor = Math.min(stats.armorCap, Math.max(0, stats.armor + variant.armorBonus));
 
+		//水栖变种照原版食人鱼：离水即死，尸体就是那块神秘的肉，且不给经验
+		if (variant == Variant.WATER_HUNTER) {
+			loot = MysteryMeat.class;
+			lootChance = 1f;
+			exp = 0;
+
+			//"水路上够不到就当没看见"：换成三个包一层的状态
+			SLEEPING = new WaterSleeping();
+			WANDERING = new WaterWandering();
+			HUNTING = new WaterHunting();
+		}
+
 		if (resetHealth) {
 			specialCooldown = initialCooldown(variant);
 			ambushReady = true;
@@ -277,8 +292,41 @@ public class Rat extends Mob {
 		return sprite;
 	}
 
+	// ==================== 水栖变种（做法照原版 Piranha） ====================
+
+	/** 水栖变种（WATER_HUNTER）只在水里活动 */
+	private boolean waterBound(){
+		return variant == Variant.WATER_HUNTER;
+	}
+
+	/** 水里才算路：原版食人鱼就是拿这张表去 findStep / flee 的 */
+	private static boolean[] waterPassable(){
+		return BArray.and(Dungeon.level.water, Dungeon.level.passable, null);
+	}
+
+	@Override
+	protected boolean getFurther( int target ) {
+		if (!waterBound()) return super.getFurther( target );
+
+		int step = Dungeon.flee( this, target, waterPassable(), fieldOfView, true );
+		if (step != -1) {
+			move( step );
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	@Override
 	protected ActionSubmission proposeAction() {
+
+		//离水即死：被推出水面（击退/传送/水干了/浮空）的水栖变种直接死掉，
+		//尸体就是一块神秘的肉（掉落与经验在 configure 里按原版食人鱼配好了）
+		if (waterBound() && (!Dungeon.level.water[pos] || flying)) {
+			dieOnLand();
+			return ActionSubmission.idle();
+		}
+
 		if (reviveTurns > 0) {
 			reviveTurns--;
 			if (reviveTurns == 0) {
@@ -325,6 +373,41 @@ public class Rat extends Mob {
 			if (state == SLEEPING) state = WANDERING;
 		}
 		return super.proposeAction();
+	}
+
+	/** 死在水面上（原版食人鱼同名做法）：正常死亡流程，尸体就是那块神秘的肉 */
+	public void dieOnLand(){
+		die( null );
+	}
+
+	/** 水路上够不到目标，就当作没看见——不然它会对着岸边一直扑腾 */
+	private boolean reachableByWater( boolean enemyInFOV ){
+		if (enemyInFOV && enemy != null){
+			PathFinder.buildDistanceMap(enemy.pos, Dungeon.level.water, viewDistance);
+			return PathFinder.distance[pos] != Integer.MAX_VALUE;
+		}
+		return enemyInFOV;
+	}
+
+	private class WaterSleeping extends Mob.Sleeping {
+		@Override
+		public ActionSubmission decide( boolean enemyInFOV, boolean justAlerted ){
+			return super.decide( reachableByWater(enemyInFOV), justAlerted );
+		}
+	}
+
+	private class WaterWandering extends Mob.Wandering {
+		@Override
+		public ActionSubmission decide( boolean enemyInFOV, boolean justAlerted ){
+			return super.decide( reachableByWater(enemyInFOV), justAlerted );
+		}
+	}
+
+	private class WaterHunting extends Mob.Hunting {
+		@Override
+		public ActionSubmission decide( boolean enemyInFOV, boolean justAlerted ){
+			return super.decide( reachableByWater(enemyInFOV), justAlerted );
+		}
 	}
 
 	@Override
@@ -601,6 +684,21 @@ public class Rat extends Mob {
 
 	@Override
 	protected boolean getCloser(int target) {
+
+		//水栖变种只在水里走：拿"只含水的通行表"走单步（原版食人鱼的做法）
+		if (waterBound()) {
+			if (rooted) {
+				return false;
+			}
+			int step = Dungeon.findStep( this, target, waterPassable(), fieldOfView, true );
+			if (step != -1) {
+				move( step );
+				return true;
+			} else {
+				return false;
+			}
+		}
+
 		if (variant != Variant.CHARMER) return super.getCloser(target);
 		if (alignment == Alignment.ALLY && enemy == null && buffs(AllyBuff.class).isEmpty()) {
 			target = Dungeon.hero.pos;

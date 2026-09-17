@@ -75,13 +75,14 @@ import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRemoveCurs
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
 import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfEnchantment;
 import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfMagicMissile;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Cudgel;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.hero.Cudgel;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.hero.Knuckleduster;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.hero.MagesStaff;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.hero.Rapier;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.hero.SpiritBow;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.hero.WornDagger;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.hero.WornShortsword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Dagger;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Knuckleduster;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MagesStaff;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Rapier;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.WornShortsword;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingKnife;
 import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingStone;
 import com.shatteredpixel.shatteredpixeldungeon.journal.Catalog;
@@ -423,7 +424,7 @@ public abstract class HeroClass {
 	}
 
 	private static void initRogue( Hero hero ) {
-		(hero.belongings.weapon = new Dagger()).identify();
+		(hero.belongings.weapon = new WornDagger()).identify();
 
 		CloakOfShadows cloak = new CloakOfShadows();
 		(hero.belongings.artifact = cloak).identify();

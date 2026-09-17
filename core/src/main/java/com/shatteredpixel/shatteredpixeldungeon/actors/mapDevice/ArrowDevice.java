@@ -23,7 +23,7 @@ import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageInfo;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageType;
 import com.shatteredpixel.shatteredpixeldungeon.mechanics.Proc.DamageWay;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.SpiritBow;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.hero.SpiritBow;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ArrowDeviceSprite;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.MissileSprite;

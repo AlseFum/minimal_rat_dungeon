@@ -253,7 +253,7 @@ public final class ItemDropRegistry {
 			rare(WandOfTransfusion.class, WandOfTransfusion::new),
 			rare(WandOfWarding.class, WandOfWarding::new),
 
-			// Melee weapons（一般武入池：Dagger 虽为盗贼开局武亦入池允许重复；
+			// Melee weapons（一般武入池：盗贼开局已换 WornDagger，Dagger 本体转为纯池武器；
 			// Sword 战士开局已换 WornShortsword，通用剑作为"普通武器"位入池；
 			// Crossbow 属远程弹药系武器，只在平铺池稀有档掉落，不进 WEP deck）
 			item(Dagger.class, Dagger::new),

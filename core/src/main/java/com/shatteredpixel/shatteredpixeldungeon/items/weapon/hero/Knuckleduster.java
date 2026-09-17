@@ -19,16 +19,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-package com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee;
+package com.shatteredpixel.shatteredpixeldungeon.items.weapon.hero;
 
-/**
- * 战士开局专属剑，忠实还原原作 Worn Shortsword：
- * 一把长期使用磨损的旧短剑。fork 通用单手剑公式 +0 即 1-10，与原作面板一致，
- * 故不重写 min/max——差异体现在名称、描述与发放渠道。
- * <p>开局专属，不入任何掉落池（ItemDropRegistry / WEP deck）。
- */
-public class WornShortsword extends Sword {
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
+import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
+public class Knuckleduster extends MeleeWeapon {
 
-	//沿用 Sword 的贴图、面板与一切行为
+	{
+		image = ItemSpriteSheet.SAI;
+		DLY = 0.5f; //2x speed
+	}
+
+	@Override
+	public int max(int lvl) {
+		return  Math.round(2.5f*(tier+1)) +
+				lvl*Math.round(0.5f*(tier+1));
+	}
 
 }

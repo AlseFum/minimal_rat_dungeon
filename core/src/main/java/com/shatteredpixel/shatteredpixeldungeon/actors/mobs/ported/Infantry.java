@@ -53,6 +53,9 @@ public class Infantry extends Mob {
 		defenseSkill = 2;
 
 		lootChance = 0.4f;
+
+		//Zoot 原值 EXP=2
+		exp = 2;
 	}
 
 	@Override

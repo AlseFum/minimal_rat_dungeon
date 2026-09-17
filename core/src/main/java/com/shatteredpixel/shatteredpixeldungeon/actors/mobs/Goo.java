@@ -61,6 +61,8 @@ public class Goo extends Mob {
 		properties.add(Property.BOSS);
 		properties.add(Property.DEMONIC);
 		properties.add(Property.ACIDIC);
+
+		exp = 10;
 	}
 
 	private int pumpedUp = 0;

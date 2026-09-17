@@ -170,6 +170,10 @@ public class Rat extends Mob {
 
 	{
 		spriteClass = RatSprite.class;
+
+		//原版就是每类怪一个固定值
+		exp = 1;
+
 		configure(Variant.BASIC, true);
 	}
 

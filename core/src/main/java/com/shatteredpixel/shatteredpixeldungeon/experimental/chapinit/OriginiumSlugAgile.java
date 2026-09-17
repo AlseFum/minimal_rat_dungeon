@@ -32,6 +32,7 @@ public class OriginiumSlugAgile extends Mob {
 		defenseSkill = 20;
 
 		lootChance = 1f;
+		exp = 2;
 	}
 
 	@Override

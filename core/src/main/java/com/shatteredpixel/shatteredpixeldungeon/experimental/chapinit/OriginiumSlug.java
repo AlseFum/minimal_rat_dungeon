@@ -30,6 +30,7 @@ public class OriginiumSlug extends Mob {
 		defenseSkill = 1;
 
 		lootChance = 0.1f;
+		exp = 1;
 	}
 
 	@Override

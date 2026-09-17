@@ -270,20 +270,6 @@ public class Hero extends Char {
 		visibleEnemies = new ArrayList<>();
 	}
 
-	/**
-	 * The five-level showcase has no experience progression. Every new hero starts
-	 * with the level-20 values that the old, longer campaign would have reached.
-	 */
-	public void initializeShowcaseStats() {
-		lvl = 20;
-		exp = 0;
-		HP = HT = 115;
-		attackSkill = 29;
-		defenseSkill = 24;
-		STR = STARTING_STR;
-		HTBoost = 0;
-	}
-	
 	public void updateHT( boolean boostHP ){
 		int curHT = HT;
 		
@@ -2220,8 +2206,40 @@ public class Hero extends Char {
 		return true;
 	}
 	
+	/** 等级上限（与原版一致） */
+	public static final int LEVEL_CAP = 30;
+
 	public void earnExp( int exp, Class source ) {
-		// Intentionally ignored: the showcase starts at level 20 and has no XP loop.
+
+		if (lvl >= LEVEL_CAP){
+			//到顶后经验不再累积
+			this.exp = 0;
+			return;
+		}
+
+		this.exp += exp;
+
+		while (this.exp >= maxExp()){
+			this.exp -= maxExp();
+			lvl++;
+
+			//每级：+1 命中、+1 闪避；血量由 updateHT 按等级重算（每级 +5 上限）并补差额
+			attackSkill++;
+			defenseSkill++;
+			updateHT( true );
+
+			Sample.INSTANCE.play(Assets.Sounds.LEVELUP);
+
+			if (lvl >= LEVEL_CAP){
+				GLog.p(Messages.get(this, "level_cap"));
+			} else if (lvl < 10){
+				GLog.p(Messages.get(this, "new_level"));
+			} else {
+				GLog.p(Messages.get(this, "level_up"));
+			}
+
+			Badges.validateLevelReached();
+		}
 	}
 	
 	public int maxExp() {

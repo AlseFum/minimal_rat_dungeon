@@ -334,9 +334,6 @@ public abstract class HeroClass {
 
 		initClassSpecific( hero );
 
-		if (Dungeon.mode == Dungeon.Mode.NORMAL) {
-			hero.initializeShowcaseStats();
-		}
 		if (DeviceCompat.isDebug()) {
 			DebugBag.install();
 			new StoneOfEnchantment().quantity(100).collect();

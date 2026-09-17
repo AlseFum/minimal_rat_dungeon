@@ -59,6 +59,7 @@ public class FrostNova extends Mob {
 		properties.add(Property.MINIBOSS);
 
 		lootChance = 1f;
+		exp = 6;
 	}
 
 	@Override

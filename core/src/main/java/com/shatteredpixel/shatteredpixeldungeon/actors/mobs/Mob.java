@@ -981,6 +981,11 @@ public abstract class Mob extends Char {
 				Badges.validateHazardAssists();
 			}
 
+			//击杀经验（exp 由各怪自己设；0 表示不给）
+			if (exp > 0 && Dungeon.hero != null && Dungeon.hero.isAlive()){
+				Dungeon.hero.earnExp( exp, cause == null ? null : cause.getClass() );
+			}
+
 			rollToDropLoot();
 
 			if (cause == Dungeon.hero || cause instanceof Weapon || cause instanceof Weapon.Enchantment){
@@ -1081,6 +1086,9 @@ public abstract class Mob extends Char {
 	
 	protected Object loot = null;
 	protected float lootChance = 0;
+
+	/** 击杀经验（各怪在自己的初始化块里设值；0 = 不给经验） */
+	public int exp = 0;
 	
 	@SuppressWarnings("unchecked")
 	public Item createLoot() {

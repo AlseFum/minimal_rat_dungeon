@@ -78,6 +78,8 @@ public class SkullShatterer extends Mob {
 
 		//掉落全部走 die()，避免 rollToDropLoot 的随机判定
 		lootChance = 0f;
+
+		exp = 10;
 	}
 
 	@Override

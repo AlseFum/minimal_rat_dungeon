@@ -16,7 +16,6 @@ import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
 
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugPlacer;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugMapTool;
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugWeaponPool;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugGiveItems;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugTalentLayers;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugTier;
@@ -50,7 +49,6 @@ public class DebugBag extends Bag {
 		if (bag.collect()) {
 			new DebugPlacer().collect();
 			new DebugMapTool().collect();
-			new DebugWeaponPool().collect();
 			new DebugGiveItems().collect();
 			new DebugTalentLayers().collect();
 			new DebugTier().collect();

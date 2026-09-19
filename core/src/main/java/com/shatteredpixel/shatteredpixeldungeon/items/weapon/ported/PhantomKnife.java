@@ -72,7 +72,7 @@ public class PhantomKnife extends MeleeWeapon {
 	private static final int AMBUSH_DMG_PER_CHARGE = 1;
 
 	{
-		tier = 1; //原代码只在 randomize() 里设 tier；DebugWeaponPool 等直接 newInstance 的路径会得到默认 0，面板减半
+		tier = 1;
 	}
 
 	static {

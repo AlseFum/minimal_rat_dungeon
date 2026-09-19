@@ -22,127 +22,23 @@
 package com.shatteredpixel.shatteredpixeldungeon.items;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
-import com.shatteredpixel.shatteredpixeldungeon.items.armor.Armor;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.AlchemistsToolkit;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.Artifact;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.ChaliceOfBlood;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.CloakOfShadows;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.DriedRose;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.EtherealChains;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.HolyTome;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.HornOfPlenty;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.MasterThievesArmband;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SandalsOfNature;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.SkeletonKey;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TalismanOfForesight;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TimekeepersHourglass;
-import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.UnstableSpellbook;
-import com.shatteredpixel.shatteredpixeldungeon.items.bombs.Bomb;
-import com.shatteredpixel.shatteredpixeldungeon.items.food.Food;
-import com.shatteredpixel.shatteredpixeldungeon.items.food.MysteryMeat;
-import com.shatteredpixel.shatteredpixeldungeon.items.food.Pasty;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.Potion;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfFrost;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLiquidFlame;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfPurity;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfStrength;
-import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfToxicGas;
-import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
-import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfForce;
-import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfWealth;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.Scroll;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfIdentify;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfLullaby;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfMagicMapping;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfMirrorImage;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRage;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRecharging;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRemoveCurse;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfRetribution;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTeleportation;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTerror;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfTransmutation;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
-import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ExoticScroll;
-import com.shatteredpixel.shatteredpixeldungeon.items.spells.Spell;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.Runestone;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAggression;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfAugmentation;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfBlast;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfBlink;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfClairvoyance;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfDeepSleep;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfDetectMagic;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfEnchantment;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfFear;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfFlock;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfIntuition;
-import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfShock;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ChaoticCenser;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.CrackedSpyglass;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.DimensionalSundial;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ExoticCrystals;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.EyeOfNewt;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.FerretTuft;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.MossyClump;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ParchmentScrap;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.PetrifiedSeed;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.SaltCube;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ShardOfOblivion;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.ThirteenLeafClover;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.TrapMechanism;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.Trinket;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.TrinketCatalyst;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.VialOfBlood;
-import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.WondrousResin;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.Wand;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfBlastWave;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfCorrosion;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfCorruption;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfDisintegration;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfFireblast;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfFrost;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLightning;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfLivingEarth;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfMagicMissile;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfPrismaticLight;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfRegrowth;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfTransfusion;
-import com.shatteredpixel.shatteredpixeldungeon.items.wands.WandOfWarding;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Dagger;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Flail;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.MeleeWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.RoundShield;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Scimitar;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sickle;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Spear;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sword;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.Bolas;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ForceCube;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.HeavyBoomerang;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.MissileWeapon;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.Shuriken;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingClub;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingKnife;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.ThrowingStone;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.Tomahawk;
-import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.Dart;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Blindweed;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Earthroot;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Fadeleaf;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Firebloom;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Icecap;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Mageroyal;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Plant;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Rotberry;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Sorrowmoss;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Starflower;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Stormvine;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Sungrass;
-import com.shatteredpixel.shatteredpixeldungeon.plants.Swiftthistle;
+import com.shatteredpixel.shatteredpixeldungeon.items.armor.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.bombs.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.food.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.rings.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.spells.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.stones.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.trinkets.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.journal.*;
+import com.shatteredpixel.shatteredpixeldungeon.plants.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.wands.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.*;
+import com.shatteredpixel.shatteredpixeldungeon.items.weapon.missiles.darts.*;
 import com.watabou.utils.Bundle;
 import com.watabou.utils.Random;
 import com.watabou.utils.Reflection;
@@ -151,6 +47,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class Loot {
 
@@ -464,7 +363,7 @@ public class Loot {
 	private static HashMap<String,Float> categoryProbs = new LinkedHashMap<>();
 
 	public static void fullReset() {
-		ItemRegistry.resetRunState();
+		droppedUniques.clear();
 		usingFirstDeck = Random.Int(2) == 0;
 		generalReset();
 		for (String cat : ALL) {
@@ -514,27 +413,129 @@ public class Loot {
 		}
 	}
 	
+	//========== 平铺池：权重与本局唯一 ==========
+	//权重语义：常见 10 / 罕见 4 / 稀有 1。没登记的类型不参与平铺抽取——
+	//「不入池」就是「不在这里列出来」，不再用权重 0 这种否定式表达。
+	private static final LinkedHashMap<Class<? extends Item>, Float> POOL_WEIGHTS = new LinkedHashMap<>();
+	//本局唯一：出了就不再抽（神器/饰品）
+	private static final LinkedHashSet<Class<? extends Item>> POOL_UNIQUE = new LinkedHashSet<>();
+	//本局已出现过的池内唯一类型（存档键 generated_unique_items，与 deck 的运行状态同住 Loot）
+	private static final LinkedHashSet<Class<? extends Item>> droppedUniques = new LinkedHashSet<>();
+
+	private static void common(Class<? extends Item> cls)    { POOL_WEIGHTS.put(cls, 10f); }
+	private static void uncommon(Class<? extends Item> cls)  { POOL_WEIGHTS.put(cls, 4f); }
+	private static void rare(Class<? extends Item> cls)      { POOL_WEIGHTS.put(cls, 1f); }
+	private static void runUnique(Class<? extends Item> cls) { POOL_WEIGHTS.put(cls, 1f); POOL_UNIQUE.add(cls); }
+
+	static {
+		//常见
+			common(Gold.class); common(Armor.class); common(Berry.class); common(Blandfruit.class);
+			common(ChargrilledMeat.class); common(Food.class); common(FrozenCarpaccio.class); common(MeatPie.class);
+			common(MysteryMeat.class); common(Pasty.class); common(SupplyRation.class); common(Pasty.FishLeftover.class);
+			common(Blandfruit.Chunks.class); common(PotionOfFrost.class); common(PotionOfHaste.class); common(PotionOfHealing.class);
+			common(PotionOfLevitation.class); common(PotionOfLiquidFlame.class); common(PotionOfPurity.class); common(PotionOfToxicGas.class);
+			common(ScrollOfIdentify.class); common(ScrollOfLullaby.class); common(ScrollOfMagicMapping.class); common(ScrollOfMirrorImage.class);
+			common(ScrollOfRage.class); common(ScrollOfRecharging.class); common(ScrollOfRemoveCurse.class); common(ScrollOfRetribution.class);
+			common(ScrollOfTeleportation.class); common(ScrollOfTerror.class); common(ScrollOfTransmutation.class); common(StoneOfAggression.class);
+			common(StoneOfBlast.class); common(StoneOfBlink.class); common(StoneOfClairvoyance.class); common(StoneOfDeepSleep.class);
+			common(StoneOfDetectMagic.class); common(StoneOfFear.class); common(StoneOfFlock.class); common(StoneOfIntuition.class);
+			common(StoneOfShock.class); common(Dagger.class); common(Flail.class); common(RoundShield.class);
+			common(Scimitar.class); common(Sickle.class); common(Spear.class); common(Sword.class);
+			common(Bolas.class); common(ForceCube.class); common(HeavyBoomerang.class); common(Shuriken.class);
+			common(ThrowingClub.class); common(ThrowingKnife.class); common(ThrowingStone.class); common(Tomahawk.class);
+			common(Dart.class); common(BlandfruitBush.Seed.class); common(Blindweed.Seed.class); common(Earthroot.Seed.class);
+			common(Fadeleaf.Seed.class); common(Firebloom.Seed.class); common(Icecap.Seed.class); common(Mageroyal.Seed.class);
+			common(Sorrowmoss.Seed.class); common(Starflower.Seed.class); common(Stormvine.Seed.class); common(Sungrass.Seed.class);
+			common(Swiftthistle.Seed.class);
+		//罕见
+			uncommon(Ankh.class); uncommon(ArcaneResin.class); uncommon(Dewdrop.class); uncommon(EnergyCrystal.class);
+			uncommon(Honeypot.class); uncommon(LiquidMetal.class); uncommon(Stylus.class); uncommon(Torch.class);
+			uncommon(DriedRose.Petal.class); uncommon(TimekeepersHourglass.sandBag.class); uncommon(Bomb.class); uncommon(PayloadBomb.class);
+			uncommon(HolyBomb.class); uncommon(Noisemaker.class); uncommon(RegrowthBomb.class); uncommon(WoollyBomb.class);
+			uncommon(Bomb.DoubleBomb.class); uncommon(Guidebook.class); uncommon(Alchemize.class); uncommon(BeaconOfReturning.class);
+			uncommon(CurseInfusion.class); uncommon(PhaseShift.class); uncommon(ReclaimTrap.class); uncommon(Recycle.class);
+			uncommon(SummonElemental.class); uncommon(TelekineticGrab.class); uncommon(UnstableSpell.class); uncommon(WildEnergy.class);
+			uncommon(TippedDart.class);
+		//稀有
+			rare(Ring.class); rare(RingOfForce.class); rare(RingOfWealth.class); rare(WandOfBlastWave.class);
+			rare(WandOfCorrosion.class); rare(WandOfCorruption.class); rare(WandOfDisintegration.class); rare(WandOfFireblast.class);
+			rare(WandOfFrost.class); rare(WandOfLightning.class); rare(WandOfLivingEarth.class); rare(WandOfMagicMissile.class);
+			rare(WandOfPrismaticLight.class); rare(WandOfRegrowth.class); rare(WandOfTransfusion.class); rare(WandOfWarding.class);
+			rare(Crossbow.class);
+		//本局唯一（稀有档）
+			runUnique(AlchemistsToolkit.class); runUnique(ChaliceOfBlood.class); runUnique(CloakOfShadows.class); runUnique(DriedRose.class);
+			runUnique(EtherealChains.class); runUnique(HolyTome.class); runUnique(HornOfPlenty.class); runUnique(MasterThievesArmband.class);
+			runUnique(SandalsOfNature.class); runUnique(SkeletonKey.class); runUnique(TalismanOfForesight.class); runUnique(TimekeepersHourglass.class);
+			runUnique(UnstableSpellbook.class); runUnique(ChaoticCenser.class); runUnique(CrackedSpyglass.class); runUnique(DimensionalSundial.class);
+			runUnique(ExoticCrystals.class); runUnique(EyeOfNewt.class); runUnique(FerretTuft.class); runUnique(MossyClump.class);
+			runUnique(ParchmentScrap.class); runUnique(PetrifiedSeed.class); runUnique(SaltCube.class); runUnique(ShardOfOblivion.class);
+			runUnique(ThirteenLeafClover.class); runUnique(TrapMechanism.class); runUnique(VialOfBlood.class); runUnique(WondrousResin.class);
+	}
+
+	//不入平铺池（脚本化/保底/开局武/移植武/剧情件等，由各自渠道发放）：
+	//  Amulet、BrokenSeal、KingsCrown、TengusMask、Waterskin、Honeypot.ShatteredPot、CapeOfThorns、Key、DarkGold、GooBlob、Pickaxe、BowFragment、BrokenHilt、BrokenStaff、CloakScrap、SealShard、TornPage、PotionOfStrength、ScrollOfUpgrade、ScrollOfAntiMagic、ScrollOfChallenge、ScrollOfDivination、ScrollOfDread、ScrollOfEnchantment、ScrollOfForesight、ScrollOfPassage、ScrollOfPrismaticImage、ScrollOfPsionicBlast、ScrollOfSirensSong、MagicalInfusion、StoneOfEnchantment、StoneOfAugmentation、StoneOfFrostEnchantment、TrinketCatalyst、Cudgel、Knuckleduster、MagesStaff、Rapier、SpiritBow、WornDagger、WornShortsword、AscalonAOE、Chakram、DeployablewCrossBow、HeavyBow、PhantomKnife、Rotberry.Seed
+
 	public static Item random() {
-		// 平铺注册表加权抽取（常见 10 / 罕见 4 / 稀有 1）；已生成的 unique 条目权重按 0 处理。
+		// 平铺池加权抽取；本局已出过的池内唯一类型不参与。
 		// 近战武器会在生成后按楼层浮动预强化（见 floatingTier/applyDepthLevel）。
 		syncObservedUniqueItems();
 
-		Item result = ItemRegistry.random();
+		LinkedHashMap<Class<? extends Item>, Float> weights = new LinkedHashMap<>();
+		for (Map.Entry<Class<? extends Item>, Float> e : POOL_WEIGHTS.entrySet()) {
+			if (POOL_UNIQUE.contains(e.getKey()) && droppedUniques.contains(e.getKey())) continue;
+			weights.put(e.getKey(), e.getValue());
+		}
+
+		ItemRegistry.Entry entry = ItemRegistry.roll(weights);
+		Class<? extends Item> type = entry.type();
+
+		//unique 按条目类型记账（工厂可能返回子类实例，如 TippedDart 的各种效果）
+		if (POOL_UNIQUE.contains(type)) {
+			droppedUniques.add(type);
+		}
+
+		Item result = entry.generate();
 		applyDepthLevel(result);
 		trackUniqueDrop(result);
 		return result;
 	}
 
+	/** 记录本局已出现的池内唯一物品（含从存档/地面/背包里观察到的），使其不再参与抽取。 */
+	@SuppressWarnings("unchecked")
+	public static void observe(Item item) {
+		if (item == null) return;
+		Class<? extends Item> type = (Class<? extends Item>) item.getClass();
+		if (POOL_UNIQUE.contains(type)) {
+			droppedUniques.add(type);
+		}
+	}
+
+	/** 本局已出现的池内唯一类型（存档用）。 */
+	public static Set<Class<? extends Item>> droppedUniques() {
+		return droppedUniques;
+	}
+
+	/** 读档时恢复本局记录；非物品类型与 null 静默跳过。 */
+	@SuppressWarnings("unchecked")
+	public static void observeTypes(Class<?>[] types) {
+		if (types == null) return;
+		for (Class<?> type : types) {
+			if (type != null && Item.class.isAssignableFrom(type)) {
+				droppedUniques.add((Class<? extends Item>) type);
+			}
+		}
+	}
+
 	private static void syncObservedUniqueItems() {
 		if (Dungeon.hero != null && Dungeon.hero.belongings != null) {
 			for (Item item : Dungeon.hero.belongings) {
-				ItemRegistry.observe(item);
+				observe(item);
 			}
 		}
 		if (Dungeon.level != null && Dungeon.level.heaps != null) {
 			for (Heap heap : Dungeon.level.heaps.valueList()) {
 				for (Item item : heap.items) {
-					ItemRegistry.observe(item);
+					observe(item);
 				}
 			}
 		}
@@ -543,7 +544,7 @@ public class Loot {
 	@SuppressWarnings("unchecked")
 	private static void trackUniqueDrop(Item result) {
 		Class<? extends Item> resultType = (Class<? extends Item>) result.getClass();
-		//注册表已自行记录 unique 类型，这里只补神器从 deck 中移除的副作用
+		//本局记录已在上面的抽取里记过，这里只补神器从 deck 中移除的副作用
 		if (result instanceof Artifact) {
 			removeArtifact((Class<? extends Artifact>) resultType);
 		}
@@ -654,7 +655,7 @@ public class Loot {
 		}
 
 		applyDepthLevel(result);
-		ItemRegistry.observe(result);
+		observe(result);
 		return result;
 	}
 
@@ -777,7 +778,7 @@ public class Loot {
 
 	public static void storeInBundle(Bundle bundle) {
 		bundle.put(FIRST_DECK, usingFirstDeck);
-		bundle.put(GENERATED_UNIQUE_ITEMS, ItemRegistry.generatedUniques().toArray(new Class<?>[0]));
+		bundle.put(GENERATED_UNIQUE_ITEMS, droppedUniques.toArray(new Class<?>[0]));
 
 		Float[] genProbs = categoryProbs.values().toArray(new Float[0]);
 		float[] storeProbs = new float[genProbs.length];
@@ -806,7 +807,7 @@ public class Loot {
 		fullReset();
 
 		if (bundle.contains(GENERATED_UNIQUE_ITEMS)) {
-			ItemRegistry.observeTypes(bundle.getClassArray(GENERATED_UNIQUE_ITEMS));
+			observeTypes(bundle.getClassArray(GENERATED_UNIQUE_ITEMS));
 		}
 
 		usingFirstDeck = bundle.getBoolean(FIRST_DECK);

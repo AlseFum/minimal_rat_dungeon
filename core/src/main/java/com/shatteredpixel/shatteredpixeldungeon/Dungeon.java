@@ -93,6 +93,7 @@ public class Dungeon {
 	//could all be their own separate numbers, but this allows iterating, much nicer for bundling/initializing.
 	public static enum LimitedDrops {
 		//limited world drops
+		STRENGTH_POTIONS,
 		HASTE_POTIONS,
 		UPGRADE_SCROLLS,
 		ARCANE_STYLI,
@@ -450,6 +451,17 @@ public class Dungeon {
 
 	}
 	
+	public static boolean strNeeded() {
+		//2 STR each floor set（沿用原作：顶层装备的力量需求靠这个跟上）
+		int strLeftThisSet = 2 - (LimitedDrops.STRENGTH_POTIONS.count - (depth / 5) * 2);
+		if (strLeftThisSet <= 0) return false;
+
+		int floorThisSet = (depth % 5);
+
+		//chance is floors left / potions left
+		return Random.Int(5 - floorThisSet) < strLeftThisSet;
+	}
+
 	public static boolean souNeeded() {
 		int souLeftThisSet;
 		//3 SOU each floor set

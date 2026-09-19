@@ -95,6 +95,7 @@ import com.shatteredpixel.shatteredpixeldungeon.ui.AttackIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Banner;
 import com.shatteredpixel.shatteredpixeldungeon.ui.BossHealthBar;
 import com.shatteredpixel.shatteredpixeldungeon.ui.CharHealthIndicator;
+import com.shatteredpixel.shatteredpixeldungeon.ui.DebugIndicator;
 import com.shatteredpixel.shatteredpixeldungeon.ui.GameLog;
 import com.shatteredpixel.shatteredpixeldungeon.ui.Icons;
 import com.shatteredpixel.shatteredpixeldungeon.ui.InventoryPane;
@@ -210,6 +211,7 @@ public class GameScene extends PixelScene {
 	private AttackIndicator attack;
 	private LootIndicator loot;
 	private ActionIndicator action;
+	private DebugIndicator debug;
 	private ResumeIndicator resume;
 
 	{
@@ -505,6 +507,11 @@ public class GameScene extends PixelScene {
 		attack = new AttackIndicator();
 		attack.camera = uiCamera;
 		add( attack );
+
+		//debug builds get a HUD tag into the debug tools (hidden otherwise)
+		debug = new DebugIndicator();
+		debug.camera = uiCamera;
+		add( debug );
 
 		log = new GameLog();
 		log.camera = uiCamera;
@@ -992,6 +999,13 @@ public class GameScene extends PixelScene {
 		if (scene.tagResume) {
 			scene.resume.setRect( tagLeft, pos - Tag.SIZE, tagWidth, Tag.SIZE );
 			scene.resume.flip(tagsOnLeft);
+			pos = scene.resume.top();
+		}
+
+		//调试标签常驻（仅 INDEV），摆在标签列最上方
+		if (scene.debug != null && scene.debug.visible) {
+			scene.debug.setRect( tagLeft, pos - Tag.SIZE, tagWidth, Tag.SIZE );
+			scene.debug.flip(tagsOnLeft);
 		}
 	}
 	

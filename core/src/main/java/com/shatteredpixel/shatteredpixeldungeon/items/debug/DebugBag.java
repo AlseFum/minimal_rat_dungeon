@@ -14,16 +14,10 @@
 package com.shatteredpixel.shatteredpixeldungeon.items.debug;
 import com.shatteredpixel.shatteredpixeldungeon.items.bags.Bag;
 
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugFrostAura;
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugMisery;
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugNextFloor;
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugMapDevice;
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugArrowDevice;
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugHeatPumpChannel;
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugIceCrystalAltar;
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugOriginiumAltar;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugPlacer;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugMapTool;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugWeaponPool;
-import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugSpawnInfantry;
+import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugGiveItems;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugTalentLayers;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugTier;
 import com.shatteredpixel.shatteredpixeldungeon.items.debug.DebugTool;
@@ -54,16 +48,10 @@ public class DebugBag extends Bag {
 	public static void install() {
 		DebugBag bag = new DebugBag();
 		if (bag.collect()) {
-			new DebugNextFloor().collect();
-			new DebugMapDevice().collect();
-			new DebugArrowDevice().collect();
-			new DebugHeatPumpChannel().collect();
-			new DebugIceCrystalAltar().collect();
-			new DebugOriginiumAltar().collect();
-			new DebugFrostAura().collect();
-			new DebugMisery().collect();
+			new DebugPlacer().collect();
+			new DebugMapTool().collect();
 			new DebugWeaponPool().collect();
-			new DebugSpawnInfantry().collect();
+			new DebugGiveItems().collect();
 			new DebugTalentLayers().collect();
 			new DebugTier().collect();
 		}

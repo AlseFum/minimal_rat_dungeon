@@ -27,7 +27,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Sword;
  * 战士开局专属剑，忠实还原原作 Worn Shortsword：
  * 一把长期使用磨损的旧短剑。fork 通用单手剑公式 +0 即 1-10，与原作面板一致，
  * 故不重写 min/max——差异体现在名称、描述与发放渠道。
- * <p>开局专属，不入任何掉落池（ItemDropRegistry / WEP deck）。
+ * <p>开局专属，不入任何掉落池（ItemRegistry / WEP deck）。
  */
 public class WornShortsword extends Sword {
 

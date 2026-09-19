@@ -26,7 +26,7 @@ import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 public class Knuckleduster extends MeleeWeapon {
 
 	{
-		image = ItemSpriteSheet.SAI;
+		image = ItemSpriteSheet.KNUCKLEDUSTER;
 		DLY = 0.5f; //2x speed
 	}
 

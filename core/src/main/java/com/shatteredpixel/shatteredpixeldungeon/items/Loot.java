@@ -48,6 +48,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHealing;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLevitation;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfLiquidFlame;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfPurity;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfStrength;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfToxicGas;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.Ring;
 import com.shatteredpixel.shatteredpixeldungeon.items.rings.RingOfForce;
@@ -150,7 +151,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 
 public class Loot {
 
@@ -278,8 +278,9 @@ public class Loot {
 					PotionOfToxicGas.class,
 					PotionOfHaste.class,
 					PotionOfLevitation.class,
-					PotionOfPurity.class};
-			of("POTION").defaultProbs  = new float[]{ 1, 1, 1, 1, 1, 1, 1 };
+					PotionOfPurity.class,
+					PotionOfStrength.class}; //力量药水：概率 0，由 Dungeon.strNeeded() 保底发放（追加在末尾，不动已有几味药的颜色分配）
+			of("POTION").defaultProbs  = new float[]{ 1, 1, 1, 1, 1, 1, 1, 0 };
 			deck("POTION").probs = of("POTION").defaultProbs.clone();
 			
 			of("SEED").classes = new Class<?>[]{
@@ -462,10 +463,8 @@ public class Loot {
 	private static HashMap<String,Float> defaultCatProbs = new LinkedHashMap<>();
 	private static HashMap<String,Float> categoryProbs = new LinkedHashMap<>();
 
-	private static final LinkedHashSet<Class<? extends Item>> generatedUniqueItems = new LinkedHashSet<>();
-
 	public static void fullReset() {
-		generatedUniqueItems.clear();
+		ItemRegistry.resetRunState();
 		usingFirstDeck = Random.Int(2) == 0;
 		generalReset();
 		for (String cat : ALL) {
@@ -520,67 +519,33 @@ public class Loot {
 		// 近战武器会在生成后按楼层浮动预强化（见 floatingTier/applyDepthLevel）。
 		syncObservedUniqueItems();
 
-		float sum = 0;
-		for (ItemDropRegistry.Entry entry : ItemDropRegistry.entries()) {
-			if (!entry.unique() || !generatedUniqueItems.contains(entry.type())) {
-				sum += entry.weight();
-			}
-		}
-
-		if (sum <= 0) {
-			throw new IllegalStateException("The flat item drop registry has no available entries");
-		}
-
-		float roll = Random.Float(sum);
-		for (ItemDropRegistry.Entry entry : ItemDropRegistry.entries()) {
-			if (entry.unique() && generatedUniqueItems.contains(entry.type())) {
-				continue;
-			}
-			if (roll < entry.weight()) {
-				Item result = entry.create().random();
-				applyDepthLevel(result);
-				trackUniqueDrop(entry, result);
-				return result;
-			}
-			roll -= entry.weight();
-		}
-
-		throw new IllegalStateException("The flat item drop registry changed during selection");
+		Item result = ItemRegistry.random();
+		applyDepthLevel(result);
+		trackUniqueDrop(result);
+		return result;
 	}
 
 	private static void syncObservedUniqueItems() {
 		if (Dungeon.hero != null && Dungeon.hero.belongings != null) {
 			for (Item item : Dungeon.hero.belongings) {
-				trackObservedUnique(item);
+				ItemRegistry.observe(item);
 			}
 		}
 		if (Dungeon.level != null && Dungeon.level.heaps != null) {
 			for (Heap heap : Dungeon.level.heaps.valueList()) {
 				for (Item item : heap.items) {
-					trackObservedUnique(item);
+					ItemRegistry.observe(item);
 				}
 			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private static void trackObservedUnique(Item item) {
-		Class<? extends Item> type = (Class<? extends Item>) item.getClass();
-		if (item.unique || item instanceof Artifact || ItemDropRegistry.isUniqueType(type)) {
-			generatedUniqueItems.add(type);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private static void trackUniqueDrop(ItemDropRegistry.Entry entry, Item result) {
+	private static void trackUniqueDrop(Item result) {
 		Class<? extends Item> resultType = (Class<? extends Item>) result.getClass();
-		if (entry.unique() || result.unique || result instanceof Artifact
-				|| ItemDropRegistry.isUniqueType(resultType)) {
-			generatedUniqueItems.add(entry.type());
-			generatedUniqueItems.add(resultType);
-			if (result instanceof Artifact) {
-				removeArtifact((Class<? extends Artifact>) resultType);
-			}
+		//注册表已自行记录 unique 类型，这里只补神器从 deck 中移除的副作用
+		if (result instanceof Artifact) {
+			removeArtifact((Class<? extends Artifact>) resultType);
 		}
 	}
 
@@ -666,9 +631,9 @@ public class Loot {
 	}
 
 	/**
-	 * Uses the explicit drop factory whenever possible. The reflective fallback is
+	 * Uses the explicit registry factory whenever possible. The reflective fallback is
 	 * retained only for compatibility with dynamically supplied mob loot classes
-	 * which are intentionally outside the flat drop registry.
+	 * which are intentionally outside the flat registry.
 	 */
 	@SuppressWarnings("unchecked")
 	private static Item createRandom(Class<?> type) {
@@ -676,17 +641,20 @@ public class Loot {
 			throw new IllegalArgumentException("Item generator received a non-item type: " + type);
 		}
 
-		Item result = ItemDropRegistry.create((Class<? extends Item>) type);
+		//注册表条目已含 random()，未注册类型才走反射 + 手动 random()
+		Item result = ItemRegistry.generate((Class<? extends Item>) type);
 		if (result == null) {
 			result = Reflection.newInstance((Class<? extends Item>) type);
+			if (result != null) {
+				result = result.random();
+			}
 		}
 		if (result == null) {
 			throw new IllegalStateException("Unable to construct item type: " + type.getName());
 		}
 
-		result = result.random();
 		applyDepthLevel(result);
-		trackObservedUnique(result);
+		ItemRegistry.observe(result);
 		return result;
 	}
 
@@ -809,7 +777,7 @@ public class Loot {
 
 	public static void storeInBundle(Bundle bundle) {
 		bundle.put(FIRST_DECK, usingFirstDeck);
-		bundle.put(GENERATED_UNIQUE_ITEMS, generatedUniqueItems.toArray(new Class<?>[0]));
+		bundle.put(GENERATED_UNIQUE_ITEMS, ItemRegistry.generatedUniques().toArray(new Class<?>[0]));
 
 		Float[] genProbs = categoryProbs.values().toArray(new Float[0]);
 		float[] storeProbs = new float[genProbs.length];
@@ -838,11 +806,7 @@ public class Loot {
 		fullReset();
 
 		if (bundle.contains(GENERATED_UNIQUE_ITEMS)) {
-			for (Class<?> type : bundle.getClassArray(GENERATED_UNIQUE_ITEMS)) {
-				if (type != null && Item.class.isAssignableFrom(type)) {
-					generatedUniqueItems.add((Class<? extends Item>) type);
-				}
-			}
+			ItemRegistry.observeTypes(bundle.getClassArray(GENERATED_UNIQUE_ITEMS));
 		}
 
 		usingFirstDeck = bundle.getBoolean(FIRST_DECK);

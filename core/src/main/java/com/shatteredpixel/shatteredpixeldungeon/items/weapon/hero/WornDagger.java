@@ -27,7 +27,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.weapon.melee.Dagger;
  * 盗贼开局专属匕首，与 WornShortsword/Sword 同先例：
  * 一把长期使用磨损的旧匕首。沿用 Dagger 的贴图、面板（1-8）与偷袭加成、sneak 武技，
  * 故不重写任何行为——差异体现在名称、描述与发放渠道。
- * <p>开局专属，不入任何掉落池（ItemDropRegistry / WEP deck）；
+ * <p>开局专属，不入任何掉落池（ItemRegistry / WEP deck）；
  * Dagger 本体改作一般武池武器。
  */
 public class WornDagger extends Dagger {

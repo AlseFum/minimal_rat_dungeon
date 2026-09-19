@@ -69,6 +69,7 @@ import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TalismanOfForesi
 import com.shatteredpixel.shatteredpixeldungeon.items.artifacts.TimekeepersHourglass;
 import com.shatteredpixel.shatteredpixeldungeon.items.bombs.Bomb;
 import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfHaste;
+import com.shatteredpixel.shatteredpixeldungeon.items.potions.PotionOfStrength;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.ScrollOfUpgrade;
 import com.shatteredpixel.shatteredpixeldungeon.items.scrolls.exotic.ScrollOfChallenge;
 import com.shatteredpixel.shatteredpixeldungeon.items.stones.StoneOfEnchantment;
@@ -209,6 +210,10 @@ public abstract class Level implements Bundlable {
 
 			addItemToSpawn(Loot.random(Loot.FOOD));
 
+			if (Dungeon.strNeeded()) {
+				Dungeon.LimitedDrops.STRENGTH_POTIONS.count++;
+				addItemToSpawn( new PotionOfStrength() );
+			}
 			if (Dungeon.hasteNeeded()) {
 				Dungeon.LimitedDrops.HASTE_POTIONS.count++;
 				// The fixed buff keeps the five-level showcase experience complete after strength growth is removed.

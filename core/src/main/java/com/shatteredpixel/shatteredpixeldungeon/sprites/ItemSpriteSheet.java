@@ -234,14 +234,14 @@ public class ItemSpriteSheet {
 	public static final int MACE            = WEP_TIER3+1;
 	public static final int SCIMITAR        = WEP_TIER3+2;
 	public static final int ROUND_SHIELD    = WEP_TIER3+3;
-	public static final int SAI             = WEP_TIER3+4;
+	public static final int KNUCKLEDUSTER   = WEP_TIER3+4;
 	public static final int WHIP            = WEP_TIER3+5;
 	static{
 		assignItemRect(SWORD,           14, 14);
 		assignItemRect(MACE,            15, 15);
 		assignItemRect(SCIMITAR,        13, 16);
 		assignItemRect(ROUND_SHIELD,    16, 16);
-		assignItemRect(SAI,             16, 16);
+		assignItemRect(KNUCKLEDUSTER,   16, 16);
 		assignItemRect(WHIP,            14, 14);
 	}
 
@@ -511,6 +511,7 @@ public class ItemSpriteSheet {
 	public static final int POTION_TURQUOISE= POTIONS+4;
 	public static final int POTION_AZURE    = POTIONS+5;
 	public static final int POTION_INDIGO   = POTIONS+6;
+	public static final int POTION_MAGENTA  = POTIONS+7;
 
 	public static final int LIQUID_METAL    = POTIONS+13;
 	static {
@@ -744,6 +745,7 @@ public class ItemSpriteSheet {
 		                                                                                //16 free slots
 
 		private static final int POTIONS        =                            xy(1, 6);  //16 slots
+		public static final int POTION_STRENGTH = POTIONS+0;
 		public static final int POTION_HEALING  = POTIONS+1;
 		public static final int POTION_FROST    = POTIONS+3;
 		public static final int POTION_LIQFLAME = POTIONS+4;
@@ -752,6 +754,7 @@ public class ItemSpriteSheet {
 		public static final int POTION_LEVITATE = POTIONS+8;
 		public static final int POTION_PURITY   = POTIONS+10;
 		static {
+			assignIconRect( POTION_STRENGTH,    7, 7 );
 			assignIconRect( POTION_HEALING,     6, 7 );
 			assignIconRect( POTION_FROST,       7, 7 );
 			assignIconRect( POTION_LIQFLAME,    5, 7 );

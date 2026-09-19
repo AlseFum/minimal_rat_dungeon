@@ -23,31 +23,30 @@ package com.shatteredpixel.shatteredpixeldungeon.items.debug;
 
 import com.shatteredpixel.shatteredpixeldungeon.Dungeon;
 import com.shatteredpixel.shatteredpixeldungeon.actors.Actor;
-import com.shatteredpixel.shatteredpixeldungeon.actors.Char;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.Buff;
-import com.shatteredpixel.shatteredpixeldungeon.actors.buffs.FrostAura;
 import com.shatteredpixel.shatteredpixeldungeon.actors.hero.Hero;
+import com.shatteredpixel.shatteredpixeldungeon.actors.mapDevice.DebugDummyMapDevice;
 import com.shatteredpixel.shatteredpixeldungeon.items.Item;
+import com.shatteredpixel.shatteredpixeldungeon.levels.Level;
+import com.shatteredpixel.shatteredpixeldungeon.levels.features.LevelTransition;
 import com.shatteredpixel.shatteredpixeldungeon.messages.Messages;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.CellSelector;
 import com.shatteredpixel.shatteredpixeldungeon.scenes.GameScene;
+import com.shatteredpixel.shatteredpixeldungeon.scenes.InterlevelScene;
 import com.shatteredpixel.shatteredpixeldungeon.sprites.ItemSpriteSheet;
 import com.shatteredpixel.shatteredpixeldungeon.utils.GLog;
+import com.watabou.noosa.Game;
 
 import java.util.ArrayList;
 
-/**
- * Applies a {@link FrostAura} to the character standing on the selected cell.
- * Attacking that character then fails, and the attacker is chilled - handy for
- * testing the midAction failure pipeline.
- */
-public class DebugFrostAura extends Item implements DebugTool {
+/** Debug 工具（地图类）：层级与地图层面的操作。 */
+public class DebugMapTool extends Item implements DebugTool {
 
-	private static final String AC_APPLY = "APPLY";
+	private static final String AC_NEXT_FLOOR = "NEXT_FLOOR";
+	private static final String AC_MAP_DEVICE = "MAP_DEVICE";
 
 	{
-		image = ItemSpriteSheet.FROST_BOMB;
-		defaultAction = AC_APPLY;
+		image = ItemSpriteSheet.SCROLL_HOLDER;
+		defaultAction = AC_NEXT_FLOOR;
 		unique = true;
 		stackable = false;
 	}
@@ -55,36 +54,54 @@ public class DebugFrostAura extends Item implements DebugTool {
 	@Override
 	public ArrayList<String> actions( Hero hero ) {
 		ArrayList<String> actions = super.actions(hero);
-		actions.add(AC_APPLY);
+		actions.add(AC_NEXT_FLOOR);
+		actions.add(AC_MAP_DEVICE);
 		return actions;
 	}
 
 	@Override
 	public void execute( Hero hero, String action ) {
 		super.execute(hero, action);
-		if (AC_APPLY.equals(action) && Dungeon.level != null) {
-			GameScene.selectCell(applier);
+		if (Dungeon.level == null) return;
+
+		if (AC_NEXT_FLOOR.equals(action)) {
+			goToNextLevel();
+		} else if (AC_MAP_DEVICE.equals(action)) {
+			GameScene.selectCell(placer);
 		}
 	}
 
-	private final CellSelector.Listener applier = new CellSelector.Listener() {
+	public static void goToNextLevel() {
+		if (Dungeon.hero == null || Dungeon.level == null) return;
+		Level.beforeTransition();
+		InterlevelScene.curTransition = new LevelTransition(
+				Dungeon.level, Dungeon.level.exit(), LevelTransition.Type.REGULAR_EXIT,
+				Dungeon.depth + 1, Dungeon.branch, LevelTransition.Type.REGULAR_ENTRANCE);
+		InterlevelScene.mode = InterlevelScene.Mode.DESCEND;
+		Game.switchScene(InterlevelScene.class);
+	}
+
+	private final CellSelector.Listener placer = new CellSelector.Listener() {
 		@Override
 		public void onSelect( Integer cell ) {
 			if (cell == null) return;
 
-			Char ch = Actor.findChar(cell);
-			if (ch == null || !Dungeon.level.heroFOV[cell]) {
-				GLog.w(Messages.get(DebugFrostAura.class, "invalid"));
+			if (!Dungeon.level.heroFOV[cell]
+					|| !Dungeon.level.passable[cell]
+					|| Actor.findChar(cell) != null
+					|| Dungeon.level.entityAt(cell) != null) {
+				GLog.w(Messages.get(DebugMapTool.class, "invalid"));
 				return;
 			}
 
-			Buff.prolong(ch, FrostAura.class, FrostAura.DURATION);
-			GLog.i(Messages.get(DebugFrostAura.class, "applied", ch.name(), (int)FrostAura.DURATION));
+			DebugDummyMapDevice device = new DebugDummyMapDevice();
+			device.pos = cell;
+			GameScene.add(device);
 		}
 
 		@Override
 		public String prompt() {
-			return Messages.get(DebugFrostAura.class, "prompt");
+			return Messages.get(DebugMapTool.class, "prompt");
 		}
 	};
 
@@ -96,5 +113,10 @@ public class DebugFrostAura extends Item implements DebugTool {
 	@Override
 	public boolean isUpgradable() {
 		return false;
+	}
+
+	@Override
+	public int value() {
+		return 0;
 	}
 }
